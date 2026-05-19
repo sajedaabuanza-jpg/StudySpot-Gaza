@@ -1,0 +1,54 @@
+import 'package:flutter/material.dart';
+
+import '../card/WorkspaceCard.dart';
+
+class altofah extends StatefulWidget {
+  const altofah({super.key});
+
+  @override
+  State<altofah> createState() => _altofahState();
+}
+
+class _altofahState extends State<altofah> {
+  final List<Map<String, dynamic>> workspaces = [{'title': 'مساحة1',
+    'location': 'التفاح_....',
+    'imagePath': 'assets/images/Group 10.jpg',
+    'rating': 3.0}, {
+    'title': 'مساحة1',
+    'location': 'النصر_....',
+    'imagePath': 'assets/images/Group 10.jpg',
+    'rating': 3.0
+  }, {'title': 'مساحة1',
+    'location': 'التفاح_....',
+    'imagePath': 'assets/images/Group 10.jpg',
+    'rating': 3.0}, {'title': 'مساحة1',
+    'location': 'التفاح_....',
+    'imagePath': 'assets/images/Group 10.jpg',
+    'rating': 3.0}
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    // لكفاءة استخدام الذاكرة استخدمت .builder وذلك ليتم البناء فقط عند الحاجة يعني كل ما يعمل سكرول لتحت يلي وصلو فقط بعملو بناء
+    return Scaffold(
+      appBar: AppBar(backgroundColor: const Color(0xFF386A1B)),
+      backgroundColor: Colors.white,
+      body: ListView.builder(
+        itemCount: workspaces.length,
+        itemBuilder: (BuildContext context, int index) {
+          //حجيب البيانات من خلال ال index
+          final item = workspaces[index];
+          //ولكل item  هلقيت رجعلي البيانات الخاصة فيه
+          return WorkspaceCard(
+            title: item['title'],
+            location: item['location'],
+            imagePath: item['imagePath'],
+            // استخدمي .toDouble() لضمان التحويل البرمجي
+            rating: (item['rating'] as num).toDouble(),
+          );
+        },
+
+      ),
+    );
+  }
+}
