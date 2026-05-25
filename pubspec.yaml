@@ -32,7 +32,11 @@ dependencies: #هنا قسم المكتبات
     sdk: flutter
   flutter_svg: ^2.0.10+1  # اضفت هذه المكتبة لتعريف ملفات الsvg الخاصة بدقة الشعار والايقونات
   url_launcher: 6.1.11 #هذه للخريطة
-  google_sign_in: 6.1.0 # خذه ل تسجيل الدخول باستخدام حساب جوجل
+  google_sign_in: 6.1.0 # هذه ل تسجيل الدخول باستخدام حساب جوجل
+  flutter_native_splash: 2.3.1 #هذه من اجل ال splash
+  firebase_core: 2.15.0
+  firebase_auth: 4.7.0
+
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -88,3 +92,19 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages
+flutter_native_splash:
+  # 1. لون الخلفية سادة (مثلاً أبيض)
+  color: "#ffffff"
+
+  # 2. مسار اللوجو (تأكدي من الاسم والامتداد)
+  image: assets/images/LOGO_STUDYSPOT.png
+
+  # 3. تعديل حجم اللوجو (جربي 2.5 أو 3 إذا كان صغيراً جداً)
+  android_gravity: center
+  ios_gravity: center
+
+  # 4. إعدادات أندرويد 12 (إجبارية لظهور اللوجو في الأجهزة الحديثة)
+  android_12:
+    image: assets/images/LOGO_STUDYSPOT.png
+    color: "#ffffff"
+  fullscreen: true
