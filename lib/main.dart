@@ -2,10 +2,13 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+
 // استيراد الصفحات الخاصة بكِ - تأكدي من صحة المسارات
 import 'city.dart';
 import 'googleLogin/googleLogin.dart';
 import 'homePage.dart';
+import 'favorite/favorite.dart';
+
 
 void main() async {
   // 1. التأكد من تهيئة أدوات فلاتر
@@ -33,6 +36,9 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Nearest Work Space',
       // الـ StreamBuilder هو الذي يحدد الشاشة بناءً على حالة المستخدم
+      routes: {
+        '/favorite': (context) => const favorite(),
+      },
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {

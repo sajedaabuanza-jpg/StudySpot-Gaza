@@ -31,11 +31,11 @@ dependencies: #هنا قسم المكتبات
   flutter:
     sdk: flutter
   flutter_svg: ^2.0.10+1  # اضفت هذه المكتبة لتعريف ملفات الsvg الخاصة بدقة الشعار والايقونات
-  url_launcher: 6.1.11 #هذه للخريطة
+  url_launcher: ^6.3.2 #هذه للخريطة
   google_sign_in: 6.1.0 # هذه ل تسجيل الدخول باستخدام حساب جوجل
-  flutter_native_splash: 2.3.1 #هذه من اجل ال splash
-  firebase_core: 2.15.0
-  firebase_auth: 4.7.0
+  flutter_native_splash: ^2.4.7 #هذه من اجل ال splash
+  firebase_core: ^4.9.0
+  firebase_auth: ^6.5.1
 
 
   # The following adds the Cupertino Icons font to your application.
@@ -51,7 +51,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^2.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -65,6 +65,7 @@ flutter:
   uses-material-design: true
   assets:
      -  assets/images/
+     -  assets/backgrounds/favorites_background.svg
 
 
   # An image asset can refer to one or more resolution-specific "variants", see
