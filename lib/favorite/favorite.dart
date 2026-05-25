@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-
+import 'package:nearest_work_space/homePage.dart';
+import 'package:nearest_work_space/add_workspace_screen.dart';
 
 class favorite extends StatelessWidget {
   const favorite({super.key});
@@ -498,7 +499,14 @@ class _BottomNav extends StatelessWidget {
                       icon: Icons.home_outlined,
                       label: 'الرئيسية',
                       scale: scale,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => homePage(),
+                          ),
+                        );
+                      },
                     ),
                     _BottomNavItem(
                       icon: Icons.add_location_alt_outlined,
@@ -506,7 +514,6 @@ class _BottomNav extends StatelessWidget {
                       scale: scale,
                       onTap: () {},
                     ),
-                  
                     Transform.translate(
                       offset: Offset(0, -20), // كلما زاد الرقم طلعت لفوق أكثر
                       child: _BottomNavItem(
@@ -514,7 +521,14 @@ class _BottomNav extends StatelessWidget {
                         label: '',
                         scale: scale,
                         isCenter: true,
-                        onTap: () {},
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddWorkspaceScreen(),
+                            ),
+                          );
+                        },
                       ),
                     ),
                   ],
