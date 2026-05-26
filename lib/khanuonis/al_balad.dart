@@ -3,14 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart'; // استيراد الف�
 import 'package:nearest_work_space/card/WorkspaceCard.dart';
 import 'package:nearest_work_space/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
 
-class alremal extends StatefulWidget {
-  const alremal({super.key});
+class al_balad extends StatefulWidget {
+  const al_balad({super.key});
 
   @override
-  State<alremal> createState() => _alremalState();
+  State<al_balad> createState() => _al_baladState();
 }
 
-class _alremalState extends State<alremal> {
+class _al_baladState extends State<al_balad> {
   // دالة مساعدة لحساب التقييم من الـ Firestore
   double _parseRating(String? qualityScores) {
     if (qualityScores == null || qualityScores.isEmpty) return 5.0;
@@ -39,7 +39,7 @@ class _alremalState extends State<alremal> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: const Color(0xFF386A1B),
-        title: const Text("الرمال", style: TextStyle(color: Colors.white)),
+        title: const Text("البلد", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
       ),
@@ -48,7 +48,7 @@ class _alremalState extends State<alremal> {
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
             .collection('workspaces')
-            .where('district', isEqualTo: 'الرمال') // جلب مساحات منطقة الرمال فقط
+            .where('district', isEqualTo: 'البلد') // جلب مساحات منطقة البلد فقط
             .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
@@ -74,7 +74,7 @@ class _alremalState extends State<alremal> {
                 location: "${item['city'] ?? ''} - ${item['district'] ?? ''}",
                 imagePath: item['image_url'] ?? '',
                 rating: calculatedRating,
-                // حل المشكلة: تمرير حقل الـ onTap وتفعيل الانتقال لصفحة التفاصيل بنجاح
+                // حل المشكلة: تمرير الـ onTap وتفعيل الانتقال لصفحة التفاصيل مع تمرير بيانات الـ item
                 onTap: () {
                   Navigator.push(
                     context,

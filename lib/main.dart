@@ -1,6 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:nearest_work_space/homePage.dart';
 
 // استيراد الصفحات الخاصة بكِ
@@ -12,25 +11,37 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   // تهيئة فايربيز (استخدمي خياراتك الخاصة هنا)
+=======
+import 'package:firebase_core/firebase_core.dart'; // إضافة الاستيراد
+import 'package:nearest_work_space/homePage.dart';
+import 'firebase_options.dart'; // إضافة استدعاء ملف الخيارات
+
+void main() async {
+  // تأمين تهيئة الحزم قبل تشغيل التطبيق
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // تهيئة الفايربيس
+>>>>>>> 7a76ac2e8940acf768aa710c179f69c9996da830
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyAogj0yd5S4ZsK1-ijaN9JRH1iaWph6qT8",
-      appId: "1:353988480054:android:e669cb6fdfe57abd2a5c97",
-      messagingSenderId: "353988480054",
-      projectId: "nearestworkspace",
-    ),
+    options: DefaultFirebaseOptions.currentPlatform,
   );
 
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+<<<<<<< HEAD
       title: 'Nearest Work Space',
 
       // الـ StreamBuilder هو "المراقب" الذي يغير الواجهة تلقائياً
@@ -57,6 +68,9 @@ class MyApp extends StatelessWidget {
           return  homePage();
         },
       ),
+=======
+      home: homePage(),
+>>>>>>> 7a76ac2e8940acf768aa710c179f69c9996da830
     );
   }
 }

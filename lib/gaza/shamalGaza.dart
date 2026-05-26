@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-
-import '../card/WorkspaceCard.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // استيراد الفايرستور
+import 'package:nearest_work_space/card/WorkspaceCard.dart';
+import 'package:nearest_work_space/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
 
 class shamalGaza extends StatefulWidget {
   const shamalGaza({super.key});
@@ -10,44 +11,84 @@ class shamalGaza extends StatefulWidget {
 }
 
 class _shamalGazaState extends State<shamalGaza> {
-  final List<Map<String, dynamic>> workspaces = [{'title': 'مساحة1',
-    'location': 'التفاح_....',
-    'imagePath': 'assets/images/Group 10.jpg',
-    'rating': 3.0}, {
-    'title': 'مساحة1',
-    'location': 'النصر_....',
-    'imagePath': 'assets/images/Group 10.jpg',
-    'rating': 3.0
-  }, {'title': 'مساحة1',
-    'location': 'التفاح_....',
-    'imagePath': 'assets/images/Group 10.jpg',
-    'rating': 3.0}, {'title': 'مساحة1',
-    'location': 'التفاح_....',
-    'imagePath': 'assets/images/Group 10.jpg',
-    'rating': 3.0}
-  ];
+  // دالة مساعدة لحساب التقييم من الـ Firestore
+  double _parseRating(String? qualityScores) {
+    if (qualityScores == null || qualityScores.isEmpty) return 5.0;
+    try {
+      final pairs = qualityScores.split('|');
+      double total = 0;
+      int count = 0;
+      for (var pair in pairs) {
+        final parts = pair.split(':');
+        if (parts.length == 2) {
+          final score = double.tryParse(parts[1]);
+          if (score != null) {
+            total += score;
+            count++;
+          }
+        }
+      }
+      return count > 0 ? (total / count) : 5.0;
+    } catch (e) {
+      return 5.0;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    // لكفاءة استخدام الذاكرة استخدمت .builder وذلك ليتم البناء فقط عند الحاجة يعني كل ما يعمل سكرول لتحت يلي وصلو فقط بعملو بناء
     return Scaffold(
-      appBar: AppBar(backgroundColor: const Color(0xFF386A1B)),
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF386A1B),
+        title: const Text("شمال غزة", style: TextStyle(color: Colors.white)),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       backgroundColor: Colors.white,
-      body: ListView.builder(
-        itemCount: workspaces.length,
-        itemBuilder: (BuildContext context, int index) {
-          //حجيب البيانات من خلال ال index
-          final item = workspaces[index];
-          //ولكل item  هلقيت رجعلي البيانات الخاصة فيه
-          return WorkspaceCard(
-            title: item['title'],
-            location: item['location'],
-            imagePath: item['imagePath'],
-            // استخدمي .toDouble() لضمان التحويل البرمجي
-            rating: (item['rating'] as num).toDouble(),
+      // استخدام StreamBuilder لجلب البيانات بشكل حي ومباشر من الفايرستور
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('workspaces')
+            .where('district', isEqualTo: 'شمال غزة') // تأكد من مطابقة الاسم "شمال غزة" لما هو مخزن في الفايرستور
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text("حدث خطأ أثناء تحميل البيانات"));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data?.docs ?? [];
+          if (docs.isEmpty) {
+            return const Center(child: Text("لا توجد مساحات عمل متاحة حالياً في هذه المنطقة"));
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (BuildContext context, int index) {
+              final item = docs[index].data() as Map<String, dynamic>;
+              double calculatedRating = _parseRating(item['quality_scores']);
+
+              return WorkspaceCard(
+                title: item['name'] ?? 'بدون اسم',
+                location: "${item['city'] ?? ''} - ${item['district'] ?? ''}",
+                imagePath: item['image_url'] ?? '',
+                rating: calculatedRating,
+                // حل المشكلة: تمرير حقل الـ onTap لتفعيل الانتقال لصفحة التفاصيل بنجاح
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => workspace_details_page(
+                        workspace: item,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
           );
         },
-
       ),
     );
   }
