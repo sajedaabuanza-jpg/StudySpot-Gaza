@@ -27,7 +27,7 @@ class homePage extends StatelessWidget {
           ,
 
           Positioned(
-            bottom: 110, // المسافة من أسفل الشاشة
+            bottom: 160, // المسافة من أسفل الشاشة
             left: 0,
             right: 0,
 
@@ -35,7 +35,7 @@ class homePage extends StatelessWidget {
               children: [
                 button(color: const Color(0xFF386A1B), text:'Login' , onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => const googleLogin()));}, textColor: Colors.white),
                 const SizedBox(height: 15), // مسافة بسيطة بين الزرين
-                button(color: Colors.white, text:'already loged' , onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) => const city()));}, textColor: const Color(0xFF386A1B))
+                // button(color: Colors.white, text:'already loged' , onPressed: (){Navigator.push(context, MaterialPageRoute(builder: (context) =>  city()));}, textColor: const Color(0xFF386A1B))
               ],
             ),
           )

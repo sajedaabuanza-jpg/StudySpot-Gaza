@@ -76,7 +76,7 @@ class googleLogin extends StatelessWidget {
                         print("أهلاً بك يا: ${userAccount.displayName}");
                         Navigator.pushReplacement(
                           context,
-                          MaterialPageRoute(builder: (context) => const city()),
+                          MaterialPageRoute(builder: (context) =>  city()),
                         );
                       } else {
                         print("فشلت عملية تسجيل الدخول أو تم إلغاؤها");
