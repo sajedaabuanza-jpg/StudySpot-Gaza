@@ -1,17 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:nearest_work_space/homePage.dart';
 
-// استيراد الصفحات الخاصة بكِ - تأكدي من صحة المسارات
+// استيراد الصفحات الخاصة بكِ
 import 'city.dart';
 import 'googleLogin/googleLogin.dart';
-import 'homePage.dart';
 
 void main() async {
-  // 1. التأكد من تهيئة أدوات فلاتر
+  // التأكد من تهيئة الإضافات
   WidgetsFlutterBinding.ensureInitialized();
 
-  // 2. تهيئة فايربيز بالقيم اليدوية لحل مشكلة الـ PlatformException
+  // تهيئة فايربيز (استخدمي خياراتك الخاصة هنا)
   await Firebase.initializeApp(
     options: const FirebaseOptions(
       apiKey: "AIzaSyAogj0yd5S4ZsK1-ijaN9JRH1iaWph6qT8",
@@ -32,24 +32,28 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'Nearest Work Space',
-      // الـ StreamBuilder هو الذي يحدد الشاشة بناءً على حالة المستخدم
+
+      // الـ StreamBuilder هو "المراقب" الذي يغير الواجهة تلقائياً
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (context, snapshot) {
-          // حالة التحميل (تظهر للحظات عند فتح التطبيق)
+
+          // 1. حالة التحميل عند فتح التطبيق لأول مرة
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Scaffold(
               body: Center(child: CircularProgressIndicator(color: Color(0xFF386A1B))),
             );
           }
 
-          // إذا كان المستخدم مسجل دخوله مسبقاً، اذهبي لصفحة المدن مباشرة
+          // 2. إذا وجد مستخدم (حالة تسجيل دخول ناجحة أو تبديل حساب)
           if (snapshot.hasData) {
-            return  city();
+            // سيفتح صفحة المدن، وبما أنكِ تستخدمين FirebaseAuth.instance.currentUser
+            // في صفحة city، ستتحدث البيانات (الاسم والصورة) تلقائياً للحساب الجديد.
+            return city();
           }
 
-          // إذا لم يكن مسجلاً، اذهبي لشاشة تسجيل الدخول (googleLogin)
-          // تأكدي أن googleLogin هي الشاشة التي تحتوي على زر "المتابعة باستخدام Google"
+          // 3. إذا لم يجد مستخدم (حالة تسجيل خروج)
+          // سيعيدك التطبيق فوراً لصفحة اللوجن التي تحتوي على زر "Google Login"
           return  homePage();
         },
       ),

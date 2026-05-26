@@ -25,8 +25,38 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply from: "$flutterRoot/packages/flutter_tools/gradle/flutter.gradle"
 apply plugin: 'com.google.gms.google-services'
-
 android {
+    namespace "com.example.nearest_work_space"
+    // ثبتي الرقم 34 هنا يدوياً بدلاً من flutter.compileSdkVersion
+    compileSdkVersion 34
+    ndkVersion flutter.ndkVersion
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+
+    kotlinOptions {
+        jvmTarget = '1.8'
+    }
+
+    sourceSets {
+        main.java.srcDirs += 'src/main/kotlin'
+    }
+
+    defaultConfig {
+        applicationId "com.example.nearest_work_space"
+
+        minSdkVersion 21 // الـ Firebase بيحتاج 21 على الأقل
+        targetSdkVersion 34 // ثبتيها هنا أيضاً على 34
+
+        versionCode flutterVersionCode.toInteger()
+        versionName flutterVersionName
+    }
+    // ... باقي الكود كما هو
+}
+
+/*android {
     namespace "com.example.nearest_work_space"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion flutter.ndkVersion
@@ -62,7 +92,7 @@ android {
             signingConfig signingConfigs.debug
         }
     }
-}
+}*/
 
 flutter {
     source '../..'
