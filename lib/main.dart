@@ -1,8 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart'; // إضافة الاستيراد
 import 'package:nearest_work_space/homePage.dart';
+import 'firebase_options.dart'; // إضافة استدعاء ملف الخيارات
 
+void main() async {
+  // تأمين تهيئة الحزم قبل تشغيل التطبيق
+  WidgetsFlutterBinding.ensureInitialized();
 
-void main() {
+  // تهيئة الفايربيس
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(const MyApp());
 }
 
@@ -14,7 +23,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -23,5 +31,3 @@ class _MyAppState extends State<MyApp> {
     );
   }
 }
-
-
