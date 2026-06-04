@@ -1,0 +1,42 @@
+name: studyspot
+description: A new Flutter project.
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.10.0 <4.0.0' # متوافق تماماً مع نسخة فلاتر باندا الجديدة لديكِ
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_svg: ^2.0.10+1
+  url_launcher: ^6.3.0         # 💡 تم تحديثها
+  google_sign_in: ^6.2.1
+  cupertino_icons: ^1.0.5
+  flutter_native_splash: ^2.4.0 # 💡 تم تحديثها
+  firebase_core: ^3.0.0        # 💡 رفع الإصدار للجيل الثالث المتوافق كلياً مع فلاتر باندا والويب الجديد
+  firebase_auth: ^5.0.0        # 💡 رفع الإصدار لحل مشكلة الـ PromiseJsImpl نهائياً
+  cloud_firestore: ^5.0.0      # 💡 رفع الإصدار ليتطابق مع الـ core الجديد
+  web: ^0.5.1
+
+
+dev_dependencies:
+  flutter_lints: ^2.0.1
+
+# 💡 لا يوجد أي dependency_overrides هنا لترك سيرفرات جوجل تربط الحزم السليمة تلقائياً
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/backgrounds/favorites_background.svg
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/LOGO_STUDYSPOT.png
+  android_gravity: center
+  ios_gravity: center
+  android_12:
+    image: assets/images/LOGO_STUDYSPOT.png
+    color: "#ffffff"
+  fullscreen: true
