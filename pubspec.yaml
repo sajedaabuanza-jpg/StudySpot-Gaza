@@ -18,6 +18,7 @@ dependencies:
   firebase_auth: ^5.0.0        # 💡 رفع الإصدار لحل مشكلة الـ PromiseJsImpl نهائياً
   cloud_firestore: ^5.0.0      # 💡 رفع الإصدار ليتطابق مع الـ core الجديد
   web: ^0.5.1
+  google_fonts: ^6.2.1
 
 
 dev_dependencies:
@@ -30,6 +31,8 @@ flutter:
   assets:
     - assets/images/
     - assets/backgrounds/favorites_background.svg
+    - assets/التعليقات.png
+
 
 flutter_native_splash:
   color: "#ffffff"
