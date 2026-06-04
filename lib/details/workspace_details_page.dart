@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
+// استيراد صفحة التقييمات
+import 'ratings_screen.dart';
 
 class workspace_details_page extends StatelessWidget {
   final Map<String, dynamic> workspace;
@@ -358,23 +360,56 @@ class workspace_details_page extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 25),
-
-                  // 9. زر الموقع الجغرافي
-                  if (workspace['location_url'] != null && workspace['location_url'].toString().isNotEmpty)
-                    ElevatedButton.icon(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF386A1B),
-                        minimumSize: const Size(double.infinity, 55),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                  
+                  // 9. أزرار الموقع والتقييمات
+                  Row(
+                    children: [
+                      // زر الموقع
+                      if (workspace['location_url'] != null && workspace['location_url'].toString().isNotEmpty)
+                        Expanded(
+                          child: ElevatedButton.icon(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF386A1B),
+                              minimumSize: const Size(double.infinity, 55),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                            ),
+                            icon: const Icon(Icons.location_on, color: Colors.white),
+                            label: const Text("الموقع", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                            onPressed: () async {
+                              final Uri url = Uri.parse(workspace['location_url'].toString());
+                              if (await canLaunchUrl(url)) await launchUrl(url);
+                            },
+                          ),
+                        ),
+                      const SizedBox(width: 10),
+                      // زر التقييمات
+                      Expanded(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            minimumSize: const Size(double.infinity, 55),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(30),
+                              side: const BorderSide(color: Color(0xFF386A1B), width: 1.5),
+                            ),
+                          ),
+                          onPressed: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (_) => RatingsScreen(
+                                  cafeId: workspace['id'] ?? 'unknown',
+                                  cafeName: workspace['name'] ?? 'مساحة عمل',
+                                ),
+                              ),
+                            );
+                          },
+                          child: const Text("التقييمات والتعليقات", style: TextStyle(color: Color(0xFF386A1B), fontSize: 16, fontWeight: FontWeight.bold)),
+                        ),
                       ),
-                      icon: const Icon(Icons.location_on, color: Colors.white),
-                      label: const Text("الذهاب إلى الموقع على الخريطة", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
-                      onPressed: () async {
-                        final Uri url = Uri.parse(workspace['location_url'].toString());
-                        if (await canLaunchUrl(url)) await launchUrl(url);
-                      },
-                    ),
-                  const SizedBox(height: 40),
+                    ],
+                  ),
+                  const SizedBox(height: 40),                  
                 ],
               ),
             ),
