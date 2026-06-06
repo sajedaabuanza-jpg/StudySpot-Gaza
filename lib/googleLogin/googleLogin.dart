@@ -1,4 +1,59 @@
-import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+
+class AuthService {
+  // تركنا الـ Constructor فارغاً ليقرأ تلقائياً من الإعدادات المحلية للأندرويد
+  final GoogleSignIn _googleSignIn = GoogleSignIn();
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  // --- دالة تسجيل الدخول بجوجل ---
+  Future<User?> loginWithGoogle() async {
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return null; // المستخدم ألغى العملية
+
+      final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+
+      final AuthCredential credential = GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      final UserCredential userCredential = await _auth.signInWithCredential(credential);
+      return userCredential.user;
+    } catch (error) {
+      print("خطأ في الدخول: $error");
+      return null;
+    }
+  }
+
+  // --- دالة تبديل الحساب ---
+  Future<void> switchAccount() async {
+    try {
+      // تسجيل الخروج التام لمسح الكاش وفتح نافذة اختيار الحسابات مجدداً
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+
+      // طلب تسجيل دخول جديد فوراً
+      await loginWithGoogle();
+      print("تم التبديل بنجاح");
+    } catch (error) {
+      print("خطأ في التبديل: $error");
+    }
+  }
+
+  // --- دالة تسجيل الخروج ---
+  Future<void> signOut() async {
+    try {
+      await _googleSignIn.signOut();
+      await _auth.signOut();
+      print("تم تسجيل الخروج بنجاح");
+    } catch (e) {
+      print("خطأ في تسجيل الخروج: $e");
+    }
+  }
+}
+/*import 'package:flutter/material.dart';
 import '../city.dart';
 import 'AuthService.dart';
 
@@ -130,3 +185,6 @@ class googleLogin extends StatelessWidget {
     );
   }
 }
+
+
+ */

@@ -1,5 +1,115 @@
 import 'package:flutter/material.dart';
 import 'package:studyspot/button/button.dart';
+import 'package:studyspot/googleLogin/AuthService.dart'; // استيراد ملف الخدمة مباشرة هنا
+
+class homePage extends StatelessWidget {
+  const homePage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    double screenHeight = MediaQuery.of(context).size.height;
+
+    return Scaffold(
+      body: Stack(
+        children: [
+          // 1. صورة الخلفية
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            decoration: const BoxDecoration(
+              image: DecorationImage(
+                image: AssetImage('assets/images/Welcome.png'),
+                fit: BoxFit.fill,
+              ),
+            ),
+          ),
+
+          // 2. المحتوى البرمجي المنظم
+          SafeArea(
+            child: SingleChildScrollView(
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Column(
+                  children: [
+                    SizedBox(height: screenHeight * 0.44),
+
+                    // العنوان الرئيسي
+                    const Text(
+                      "اعثر على مكانك المثالي",
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF333333),
+                        fontFamily: 'Cairo',
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+
+                    // النص الوصفي
+                    const Padding(
+                      padding: EdgeInsets.symmetric(horizontal: 10),
+                      child: Text(
+                        "اكتشف أقرب أماكن الدراسة إليك _ مع معلومات عن الكهرباء والإنترنت والأسعار",
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF6A994E),
+                          height: 1.4,
+                          fontFamily: 'Cairo',
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(height: screenHeight * 0.16),
+
+                    // قسم الأزرار المعدل بالمنطق الجديد
+                    Column(
+                      children: [
+                        // زر تسجيل الدخول الفعلي بـ Google
+                        button(
+                          color: const Color(0xFF386A1B),
+                          text: 'المتابعة باستخدام Google',
+                          onPressed: () async {
+                            // نستدعي دالة الدخول مباشرة لفتح قائمة الحسابات
+                            final userAccount = await AuthService().loginWithGoogle();
+                            if (userAccount != null) {
+                              print("تم تسجيل الدخول بنجاح للمستخدم: ${userAccount.displayName}");
+                              // الـ StreamBuilder في الـ main.dart سينتبه فوراً وينقلك لصفحة الـ city تلقائياً
+                            }
+                          },
+                          textColor: Colors.white,
+                        ),
+                        const SizedBox(height: 15),
+
+                        // زر مخصص للتجربة (لو كنتِ تريدين دخول زائر بدون فايربيز مستقبلاً)
+                        // قمنا بتعطيله مؤقتاً أو تركه كإجراء شكلي لتفادي الـ Crash الصامت للـ null user
+                        button(
+                          color: Colors.white,
+                          text: 'دخول سريع للتجربة',
+                          onPressed: () async {
+                            // الأفضل هنا أيضاً استدعاء loginWithGoogle لضمان وجود حساب للمستخدم قبل دخول صفحة المدن
+                            await AuthService().loginWithGoogle();
+                          },
+                          textColor: const Color(0xFF386A1B),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 30),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+/*import 'package:flutter/material.dart';
+import 'package:studyspot/button/button.dart';
 import 'package:studyspot/city.dart';
 import 'package:studyspot/googleLogin/googleLogin.dart';
 
@@ -103,4 +213,4 @@ class homePage extends StatelessWidget {
       ),
     );
   }
-}
+}*/

@@ -3,7 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart'; // تأكدي من هذا الاستيراد
 import 'package:studyspot/homePage.dart';
 import 'city.dart';
-import 'firebase_options.dart';
+import 'DefaultFirebaseOptions.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

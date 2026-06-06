@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // استيراد الفايرستور
-import 'package:nearest_work_space/card/WorkspaceCard.dart';
-import 'package:nearest_work_space/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
+import 'package:studyspot/card/WorkspaceCard.dart';
+import 'package:studyspot/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
 
 class hamad extends StatefulWidget {
   const hamad({super.key});
