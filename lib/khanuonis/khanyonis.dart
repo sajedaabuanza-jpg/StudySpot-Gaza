@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:studyspot/khanuonis/al_mawasi.dart'; // تم الحفاظ على الربط
+import 'package:studyspot/khanuonis/al_balad.dart'; // تم الحفاظ على الربط
+import 'package:studyspot/khanuonis/hamad.dart'; // تم الحفاظ على الربط
+
 
 class khanyonis extends StatelessWidget {
   const khanyonis({super.key});
@@ -42,10 +45,10 @@ class khanyonis extends StatelessWidget {
                   child: ListView(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
                     children: [
-                      _buildRegionCard(context, 'البلد', Icons.location_city, null),
+                      _buildRegionCard(context, 'البلد', Icons.location_city, const al_balad()),
                       // زر المواصي المفعل
                       _buildRegionCard(context, 'المواصي', Icons.waves, const al_mawasi()),
-                      _buildRegionCard(context, 'مدينة حمد والقرارة', Icons.business_outlined, null),
+                      _buildRegionCard(context, 'مدينة حمد والقرارة', Icons.business_outlined, const hamad()),
                       const SizedBox(height: 30),
                     ],
                   ),
