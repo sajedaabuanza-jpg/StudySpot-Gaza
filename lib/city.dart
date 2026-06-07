@@ -146,7 +146,7 @@ class _cityState extends State<city> {
                           'الوسطى',
                           'النصيرات، دير البلح...',
                           Icons.map_outlined,
-                          const alwesta()
+                          const AlWesta()
                       ),
                       _buildCityCard(
                           context,
