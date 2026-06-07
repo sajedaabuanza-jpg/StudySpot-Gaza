@@ -59,6 +59,7 @@ class gaza extends StatelessWidget {
                       _buildRegionCard(context, 'الرمال', Icons.apartment, const alremal()),
                       _buildRegionCard(context, 'تل الهوا', Icons.business_outlined, const talallhawa()),
                       _buildRegionCard(context, 'شمال غزة', Icons.explore_outlined, const shamalGaza()),
+                      _buildRegionCard(context, 'الشاطئ', Icons.location_city, const al_nusser()),
                       const SizedBox(height: 30),
                     ],
                   ),
