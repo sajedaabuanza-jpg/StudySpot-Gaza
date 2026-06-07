@@ -1,6 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:studyspot/alwesta/alwesta.dart';
+import 'package:studyspot/al-westa/al-westa.dart';
 import 'package:studyspot/khanuonis/khanyonis.dart';
 import 'package:studyspot/gaza/gaza.dart';
 import 'package:studyspot/googleLogin/AuthService.dart';
@@ -146,7 +146,7 @@ class _cityState extends State<city> {
                           'الوسطى',
                           'النصيرات، دير البلح...',
                           Icons.map_outlined,
-                          const alwesta()
+                          const AlWesta()
                       ),
                       _buildCityCard(
                           context,
@@ -403,7 +403,7 @@ class _cityState extends State<city> {
                           'الوسطى',
                           'النصيرات، دير البلح...',
                           Icons.map_outlined,
-                          const alwesta()
+                          const AlWesta()
                       ),
                       _buildCityCard(
                           context,

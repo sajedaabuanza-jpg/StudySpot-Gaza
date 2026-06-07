@@ -11,6 +11,19 @@ class workspace_details_page extends StatelessWidget {
     required this.workspace,
   });
 
+  // ✨ دالة ذكية لإصلاح روابط ImgBB العادية وتحويلها لروابط مباشرة تلقائياً هنا أيضاً
+  String _getCleanImageUrl(String url) {
+    final trimmedUrl = url.trim();
+    if (trimmedUrl.contains('ibb.co/') && !trimmedUrl.contains('i.ibb.co/')) {
+      final segments = trimmedUrl.split('/');
+      if (segments.isNotEmpty) {
+        final id = segments.last;
+        return 'https://i.ibb.co/$id/image.png';
+      }
+    }
+    return trimmedUrl;
+  }
+
   // 1. دالة حساب متوسط التقييم العام من حقل quality_scores
   double _getAverageRating(String? qualityScores) {
     if (qualityScores == null || qualityScores.isEmpty) return 4.0;
@@ -86,6 +99,9 @@ class workspace_details_page extends StatelessWidget {
 
     List<Map<String, String>> pricingPlans = _parsePricingPlans(workspace['pricing_plans']);
 
+    // تنظيف الرابط القادم من الفايرستور قبل عرضه
+    final cleanUrl = _getCleanImageUrl(workspace['image_url'] ?? '');
+
     return Scaffold(
       backgroundColor: const Color(0xFFF2F5E8),
       body: SingleChildScrollView(
@@ -102,12 +118,24 @@ class workspace_details_page extends StatelessWidget {
                       bottomLeft: Radius.circular(40),
                       bottomRight: Radius.circular(40),
                     ),
-                    child: Image.network(
-                      workspace['image_url'] ?? '',
+                    child: cleanUrl.isEmpty || !cleanUrl.startsWith('http')
+                        ? Container(
+                      color: Colors.grey[300],
+                      child: const Icon(Icons.image_not_supported, size: 60, color: Colors.grey),
+                    )
+                        : Image.network(
+                      cleanUrl,
                       fit: BoxFit.cover,
                       errorBuilder: (context, error, stackTrace) => Container(
                         color: Colors.grey[300],
-                        child: const Icon(Icons.broken_image, size: 60, color: Colors.grey),
+                        child: const Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.broken_image, size: 60, color: Colors.grey),
+                            SizedBox(height: 8),
+                            Text("رابط الصورة تالف أو غير مدعوم", style: TextStyle(color: Colors.grey, fontFamily: 'Cairo')),
+                          ],
+                        ),
                       ),
                     ),
                   ),
@@ -159,7 +187,7 @@ class workspace_details_page extends StatelessWidget {
                           workspace['electricity_details'] != null && workspace['electricity_details'].toString().contains("24")
                               ? "كهرباء متوفرة دائمًا"
                               : "كهرباء متوفرة",
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Cairo'),
                         ),
                       ],
                     ),
@@ -174,13 +202,13 @@ class workspace_details_page extends StatelessWidget {
                     children: [
                       Text(
                         workspace['name'] ?? 'مساحة عمل',
-                        style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold),
+                        style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
                         textAlign: TextAlign.right,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "${workspace['city'] ?? ''} - ${workspace['district'] ?? ''}",
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                        style: const TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Cairo'),
                         textAlign: TextAlign.right,
                       ),
                     ],
@@ -205,14 +233,14 @@ class workspace_details_page extends StatelessWidget {
                         ),
                         child: Text(
                           workspace['working_hours'] ?? 'غير محدد',
-                          style: const TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.bold, fontSize: 14),
+                          style: const TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo'),
                         ),
                       ),
                       Row(
                         children: [
                           Text(
                             rating.toStringAsFixed(1),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
                           ),
                           const SizedBox(width: 5),
                           Row(
@@ -351,7 +379,7 @@ class workspace_details_page extends StatelessWidget {
                           children: [
                             Text(
                               workspace['phone'].toString(),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87, fontFamily: 'Cairo'),
                             ),
                             const SizedBox(width: 12),
                             const Icon(Icons.chat, color: Colors.green, size: 28),
@@ -360,7 +388,7 @@ class workspace_details_page extends StatelessWidget {
                       ),
                     ),
                   const SizedBox(height: 25),
-                  
+
                   // 9. أزرار الموقع والتقييمات
                   Row(
                     children: [
@@ -374,7 +402,7 @@ class workspace_details_page extends StatelessWidget {
                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
                             ),
                             icon: const Icon(Icons.location_on, color: Colors.white),
-                            label: const Text("الموقع", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                            label: const Text("الموقع", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
                             onPressed: () async {
                               final Uri url = Uri.parse(workspace['location_url'].toString());
                               if (await canLaunchUrl(url)) await launchUrl(url);
@@ -404,12 +432,12 @@ class workspace_details_page extends StatelessWidget {
                               ),
                             );
                           },
-                          child: const Text("التقييمات والتعليقات", style: TextStyle(color: Color(0xFF386A1B), fontSize: 16, fontWeight: FontWeight.bold)),
+                          child: const Text("التقييمات والتعليقات", style: TextStyle(color: Color(0xFF386A1B), fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 40),                  
+                  const SizedBox(height: 40),
                 ],
               ),
             ),
@@ -423,7 +451,7 @@ class workspace_details_page extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(title, style: const TextStyle(fontSize: 18, color: Color(0xFF386A1B), fontWeight: FontWeight.bold)),
+        Text(title, style: const TextStyle(fontSize: 18, color: Color(0xFF386A1B), fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
         const SizedBox(width: 8),
         Icon(icon, color: const Color(0xFF386A1B), size: 20),
       ],
@@ -437,7 +465,7 @@ class workspace_details_page extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87)),
+          Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87, fontFamily: 'Cairo')),
           const SizedBox(width: 5),
           Icon(icon, size: 14, color: Colors.black54),
         ],
@@ -456,12 +484,12 @@ class workspace_details_page extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(price, style: const TextStyle(color: Color(0xFFC0392B), fontSize: 20, fontWeight: FontWeight.bold)),
+          Text(price, style: const TextStyle(color: Color(0xFFC0392B), fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(duration, style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold)),
-              if (label.isNotEmpty) Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11)),
+              Text(duration, style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+              if (label.isNotEmpty) Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11, fontFamily: 'Cairo')),
             ],
           ),
         ],
@@ -475,7 +503,7 @@ class workspace_details_page extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text("${score.toStringAsFixed(0)}/5", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+          Text("${score.toStringAsFixed(0)}/5", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
           const SizedBox(width: 10),
           Expanded(
             child: ClipRRect(
@@ -491,7 +519,7 @@ class workspace_details_page extends StatelessWidget {
           const SizedBox(width: 15),
           SizedBox(
             width: 85,
-            child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500), textAlign: TextAlign.right),
+            child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, fontFamily: 'Cairo'), textAlign: TextAlign.right),
           ),
         ],
       ),
@@ -512,7 +540,7 @@ class workspace_details_page extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: isOrange ? const Color(0xFFB45309) : const Color(0xFF2E7D32), fontSize: 13, fontWeight: FontWeight.w500),
+              style: TextStyle(color: isOrange ? const Color(0xFFB45309) : const Color(0xFF2E7D32), fontSize: 13, fontWeight: FontWeight.w500, fontFamily: 'Cairo'),
               textAlign: TextAlign.right,
             ),
           ),
@@ -536,10 +564,11 @@ class workspace_details_page extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.bold,
-              color: isUnavailable ? Colors.grey : Colors.black87,
-              decoration: isUnavailable ? TextDecoration.lineThrough : null,
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: isUnavailable ? Colors.grey : Colors.black87,
+                decoration: isUnavailable ? TextDecoration.lineThrough : null,
+                fontFamily: 'Cairo'
             ),
           ),
           const SizedBox(width: 10),
@@ -559,10 +588,10 @@ class workspace_details_page extends StatelessWidget {
             children: [
               if (isVerified) const Icon(Icons.check, color: Colors.green, size: 18),
               const SizedBox(width: 4),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87)),
+              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87, fontFamily: 'Cairo')),
             ],
           ),
-          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500)),
+          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500, fontFamily: 'Cairo')),
         ],
       ),
     );

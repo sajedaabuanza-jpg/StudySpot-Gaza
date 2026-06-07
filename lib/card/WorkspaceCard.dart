@@ -23,8 +23,23 @@ class WorkspaceCard extends StatefulWidget {
 class _WorkspaceCardState extends State<WorkspaceCard> {
   bool isFavorite = false;
 
+  // ✨ دالة ذكية لإصلاح روابط ImgBB العادية وتحويلها لروابط مباشرة تلقائياً
+  String _getCleanImageUrl(String url) {
+    if (url.contains('ibb.co/') && !url.contains('i.ibb.co/')) {
+      // تحويل الرابط من ibb.co/XYZ إلى رابط السيرفر المباشر i.ibb.co/XYZ/image.png
+      final segments = url.split('/');
+      if (segments.isNotEmpty) {
+        final id = segments.last;
+        return 'https://i.ibb.co/$id/image.png';
+      }
+    }
+    return url;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final cleanUrl = _getCleanImageUrl(widget.imagePath.trim());
+
     return GestureDetector(
       onTap: widget.onTap,
       child: Card(
@@ -32,13 +47,13 @@ class _WorkspaceCardState extends State<WorkspaceCard> {
         elevation: 4,
         margin: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.end,
+          crossAxisAlignment: CrossAxisAlignment.end, // اتجاه المحاذاة لليمين متوافق مع العربي
           children: [
             Stack(
               children: [
                 ClipRRect(
                   borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                  child: widget.imagePath.isEmpty || !widget.imagePath.startsWith('http')
+                  child: cleanUrl.isEmpty || !cleanUrl.startsWith('http')
                       ? Container(
                     height: 180,
                     width: double.infinity,
@@ -46,22 +61,26 @@ class _WorkspaceCardState extends State<WorkspaceCard> {
                     child: const Icon(Icons.image_not_supported, size: 50, color: Colors.grey),
                   )
                       : Image.network(
-                    widget.imagePath,
+                    cleanUrl,
                     height: 180,
                     width: double.infinity,
                     fit: BoxFit.cover,
-                    // 🛡️ معالجة الأخطاء الذكية: تمنع انهيار الكرت عند وجود روابط خاطئة في الفايرستور
+                    // 🛡️ معالجة الأخطاء المحسنة لمنع انهيار الكرت تماماً
                     errorBuilder: (context, error, stackTrace) {
                       return Container(
                         height: 180,
                         width: double.infinity,
-                        color: Colors.grey[300],
+                        color: Colors.grey[200],
                         child: const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(Icons.broken_image, size: 40, color: Colors.grey),
                             SizedBox(height: 5),
-                            Text("رابط الصورة غير مدعوم", style: TextStyle(color: Colors.grey, fontSize: 12)),
+                            Text(
+                              "رابط الصورة غير مدعوم أو تالف",
+                              style: TextStyle(color: Colors.grey, fontSize: 13, fontFamily: 'Cairo'),
+                              textAlign: TextAlign.center,
+                            ),
                           ],
                         ),
                       );
@@ -71,7 +90,7 @@ class _WorkspaceCardState extends State<WorkspaceCard> {
                       return Container(
                         height: 180,
                         width: double.infinity,
-                        color: Colors.grey[200],
+                        color: Colors.grey[100],
                         child: const Center(
                           child: CircularProgressIndicator(color: Color(0xFF386A1B)),
                         ),
@@ -79,6 +98,7 @@ class _WorkspaceCardState extends State<WorkspaceCard> {
                     },
                   ),
                 ),
+                // زر المفضلة (الـ Star) موضوع بأعلى اليمين بشكل متناسق مع اتجاه التطبيق
                 Positioned(
                   top: 10,
                   right: 10,
@@ -88,10 +108,17 @@ class _WorkspaceCardState extends State<WorkspaceCard> {
                         isFavorite = !isFavorite;
                       });
                     },
-                    child: Icon(
-                      isFavorite ? Icons.star : Icons.star_border,
-                      color: isFavorite ? Colors.yellow : Colors.white,
-                      size: 35,
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withOpacity(0.3),
+                        shape: BoxShape.circle,
+                      ),
+                      padding: const EdgeInsets.all(4),
+                      child: Icon(
+                        isFavorite ? Icons.star : Icons.star_border,
+                        color: isFavorite ? Colors.yellow : Colors.white,
+                        size: 30,
+                      ),
                     ),
                   ),
                 ),
@@ -104,22 +131,37 @@ class _WorkspaceCardState extends State<WorkspaceCard> {
                 children: [
                   Text(
                     widget.title,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, fontFamily: 'Cairo'),
+                    textDirection: TextDirection.rtl,
                   ),
+                  const SizedBox(height: 4),
                   Text(
                     widget.location,
-                    style: const TextStyle(color: Colors.grey, fontSize: 14),
+                    style: const TextStyle(color: Colors.grey, fontSize: 14, fontFamily: 'Cairo'),
+                    textDirection: TextDirection.rtl,
                   ),
-                  const SizedBox(height: 5),
+                  const SizedBox(height: 8),
+                  // عرض النجوم بشكل متناسق يبدأ من اليمين
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
-                    children: List.generate(5, (index) {
-                      return Icon(
-                        index < widget.rating.round() ? Icons.star : Icons.star_border,
-                        color: const Color(0xFF386A1B), // توحيد اللون الأخضر الخاص بالتطبيق
-                        size: 20,
-                      );
-                    }),
+                    textDirection: TextDirection.rtl,
+                    children: [
+                      Wrap(
+                        spacing: 2,
+                        children: List.generate(5, (index) {
+                          return Icon(
+                            index < widget.rating.round() ? Icons.star : Icons.star_border,
+                            color: const Color(0xFF386A1B),
+                            size: 20,
+                          );
+                        }),
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        widget.rating.toStringAsFixed(1),
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Color(0xFF386A1B)),
+                      ),
+                    ],
                   ),
                 ],
               ),
