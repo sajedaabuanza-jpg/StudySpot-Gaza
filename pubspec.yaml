@@ -32,7 +32,7 @@ flutter:
   assets:
     - assets/images/
     - assets/backgrounds/favorites_background.svg
-    - assets/backgrounds/التعليقات.png
+    - assets/backgrounds/background.png
 
 
 flutter_native_splash:
