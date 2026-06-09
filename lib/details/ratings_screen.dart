@@ -856,7 +856,7 @@ class _WaveBackground extends StatelessWidget {
   Widget build(BuildContext context) {
     return SizedBox.expand(
       child: Image.asset(
-        'assets/background.png',
+        'assets/backgrounds/background.png',
         fit: BoxFit.cover,
       ),
     );
