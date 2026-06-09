@@ -15,6 +15,8 @@ import 'package:flutter/material.dart'
     BoxDecoration,
     BorderRadius,
     Border;
+    Material;
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -242,6 +244,8 @@ class _RatingsScreenState extends State<RatingsScreen> {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.ltr,
+    child: Material(
+        color: Colors.transparent,
       child: CupertinoPageScaffold(
         backgroundColor: _darkGreen,
         child: Stack(
@@ -271,6 +275,7 @@ class _RatingsScreenState extends State<RatingsScreen> {
           ],
         ),
       ),
+    ),    
     );
   }
 }
