@@ -242,39 +242,38 @@ class _RatingsScreenState extends State<RatingsScreen> {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.ltr,
-      child: Material(
-        child: CupertinoPageScaffold(
-          backgroundColor: _darkGreen,
-          child: Stack(
-            children: [
-              const _WaveBackground(),
-              SafeArea(
-                child: Column(
-                  children: [
-                    _AppBar(cafeName: widget.cafeName),
-                    Expanded(
-                      child: _loading
-                          ? const Center(
-                        child: CupertinoActivityIndicator(
-                          color: CupertinoColors.white,
-                          radius: 16,
-                        ),
-                      )
-                          : _Body(
-                        ratingInfo: _ratingInfo!,
-                        reviews: _reviews,
-                        onAddReview: _openAddReview,
+      child: CupertinoPageScaffold(
+        backgroundColor: _darkGreen,
+        child: Stack(
+          children: [
+            const _WaveBackground(),
+            SafeArea(
+              child: Column(
+                children: [
+                  _AppBar(cafeName: widget.cafeName),
+                  Expanded(
+                    child: _loading
+                        ? const Center(
+                      child: CupertinoActivityIndicator(
+                        color: CupertinoColors.white,
+                        radius: 16,
                       ),
+                    )
+                        : _Body(
+                      ratingInfo: _ratingInfo!,
+                      reviews: _reviews,
+                      onAddReview: _openAddReview,
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
   }
+}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // APP BAR
