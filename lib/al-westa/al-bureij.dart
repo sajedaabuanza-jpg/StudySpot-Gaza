@@ -64,8 +64,11 @@ class _AlBureijState extends State<AlBureij> {
           return ListView.builder(
             itemCount: docs.length,
             itemBuilder: (BuildContext context, int index) {
-              final item = docs[index].data() as Map<String, dynamic>;
-              double calculatedRating = _parseRating(item['quality_scores']);
+              final data = docs[index].data() as Map<String, dynamic>;
+              final item = {
+                ...data,
+                'id': docs[index].id,
+              };              double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
                 title: item['name'] ?? 'بدون اسم',

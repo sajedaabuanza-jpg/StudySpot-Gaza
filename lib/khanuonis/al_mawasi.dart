@@ -85,8 +85,11 @@ class _al_mawasiState extends State<al_mawasi> {
           return ListView.builder(
             itemCount: filteredDocs.length,
             itemBuilder: (BuildContext context, int index) {
-              final item = filteredDocs[index].data() as Map<String, dynamic>;
-              double calculatedRating = _parseRating(item['quality_scores']);
+              final data = filteredDocs[index].data() as Map<String, dynamic>;
+              final item = {
+                ...data,
+                'id': filteredDocs[index].id,
+              };              double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
                 title: item['name'] ?? 'بدون اسم',

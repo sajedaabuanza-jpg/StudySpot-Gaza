@@ -64,7 +64,11 @@ class _NuseiratState extends State<Nuseirat> {
           return ListView.builder(
             itemCount: docs.length,
             itemBuilder: (BuildContext context, int index) {
-              final item = docs[index].data() as Map<String, dynamic>;
+              final data = docs[index].data() as Map<String, dynamic>;
+              final item = {
+                ...data,
+                'id': docs[index].id,
+              };
               double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
