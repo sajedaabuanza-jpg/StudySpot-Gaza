@@ -5,7 +5,6 @@ import 'package:studyspot/khanuonis/khanyonis.dart';
 import 'package:studyspot/gaza/gaza.dart';
 import 'package:studyspot/googleLogin/AuthService.dart';
 import 'package:studyspot/googleLogin/googleLogin.dart' as loginUi;
-import 'package:studyspot/add_workspace_screen.dart';
 
 
 bool isDarkMode = false;
@@ -83,17 +82,6 @@ class _cityState extends State<city> {
                   onChanged: (bool value) { setState(() { isDarkMode = value; }); },
                 ),
               ],
-            ),
-            ListTile(
-              leading: const Icon(Icons.add_business_outlined, color: Color(0xFF386A1B)),
-              title: const Text('إضافة مساحة عمل', style: TextStyle(fontFamily: 'Cairo')),
-              onTap: () {
-                Navigator.pop(context); // إغلاق الـ Drawer
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => const AddWorkspaceScreen()),
-                );
-              },
             ),
             const Divider(),
 
