@@ -1,40 +1,17 @@
 import 'package:flutter/material.dart';
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  ENTRY POINT
+//  ثيم المشروع - الألوان الرسمية من StudySpot Gaza
 // ══════════════════════════════════════════════════════════════════════════════
 
-void main() => runApp(const App());
-
-class App extends StatelessWidget {
-  const App({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'طلب مساحة عمل',
-      theme: ThemeData(
-        fontFamily: 'Cairo',
-        useMaterial3: false,
-        scaffoldBackgroundColor: const Color(0xFFEFF6EF),
-      ),
-      home: const AddWorkspaceScreen(),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  COLORS
-// ══════════════════════════════════════════════════════════════════════════════
-
-const kGreen = Color(0xFF4CAF50);
-const kGreenLight = Color(0xFFE8F5E9);
-const kGreenBg = Color(0xFFEFF6EF);
-const kBorder = Color(0xFFCCCCCC);
-const kHint = Color(0xFFAAAAAA);
-const kText = Color(0xFF333333);
-const kTextSub = Color(0xFF666666);
-const kWhite = Colors.white;
+const kGreen       = Color(0xFF386A1B); // اللون الرئيسي للمشروع
+const kGreenLight  = Color(0xFFF1F8E9); // خلفية الأقسام الخضراء الفاتحة
+const kGreenBg     = Color(0xFFEFF6EF); // خلفية الشاشة
+const kBorder      = Color(0xFFCCCCCC);
+const kHint        = Color(0xFFAAAAAA);
+const kText        = Color(0xFF333333);
+const kTextSub     = Color(0xFF666666);
+const kWhite       = Colors.white;
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  REUSABLE: Section Header  (أيقونة + نص على اليمين، خلفية خضراء فاتحة)
@@ -63,6 +40,7 @@ class _SectionHeader extends StatelessWidget {
               fontSize: 13,
               fontWeight: FontWeight.bold,
               color: kGreen,
+              fontFamily: 'Cairo',
             ),
           ),
           const SizedBox(width: 6),
@@ -79,15 +57,16 @@ class _SectionHeader extends StatelessWidget {
 
 class _InputField extends StatelessWidget {
   final String hint;
-  final IconData? leadingIcon; // على اليسار في RTL
+  final IconData? leadingIcon;
   final int maxLines;
   final TextInputType keyboardType;
 
   const _InputField({
     required this.hint,
     this.leadingIcon,
+    this.maxLines = 1,
     this.keyboardType = TextInputType.text,
-  }) : maxLines = 1;
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,19 +75,17 @@ class _InputField extends StatelessWidget {
       textDirection: TextDirection.rtl,
       maxLines: maxLines,
       keyboardType: keyboardType,
+      style: const TextStyle(fontFamily: 'Cairo', fontSize: 13),
       decoration: InputDecoration(
         hintText: hint,
         hintTextDirection: TextDirection.rtl,
-        hintStyle: const TextStyle(color: kHint, fontSize: 12),
+        hintStyle: const TextStyle(color: kHint, fontSize: 12, fontFamily: 'Cairo'),
         prefixIcon: leadingIcon != null
             ? Icon(leadingIcon, color: kGreen, size: 18)
             : null,
         filled: true,
         fillColor: kWhite,
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 12,
-          vertical: 11,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
           borderSide: const BorderSide(color: kBorder),
@@ -130,11 +107,7 @@ class _DropdownField extends StatefulWidget {
   final String hint;
   final List<String> items;
   final IconData? leadingIcon;
-  const _DropdownField({
-    required this.hint,
-    required this.items,
-    this.leadingIcon,
-  });
+  const _DropdownField({required this.hint, required this.items, this.leadingIcon});
 
   @override
   State<_DropdownField> createState() => _DropdownFieldState();
@@ -160,10 +133,8 @@ class _DropdownFieldState extends State<_DropdownField> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
-                Text(
-                  widget.hint,
-                  style: const TextStyle(color: kHint, fontSize: 12),
-                ),
+                Text(widget.hint,
+                    style: const TextStyle(color: kHint, fontSize: 12, fontFamily: 'Cairo')),
                 if (widget.leadingIcon != null) ...[
                   const SizedBox(width: 5),
                   Icon(widget.leadingIcon, color: kGreen, size: 16),
@@ -173,15 +144,14 @@ class _DropdownFieldState extends State<_DropdownField> {
           ),
           icon: const Icon(Icons.keyboard_arrow_down, color: kGreen, size: 20),
           items: widget.items
-              .map(
-                (e) => DropdownMenuItem(
-                  value: e,
-                  child: Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(e, style: const TextStyle(fontSize: 12)),
-                  ),
-                ),
-              )
+              .map((e) => DropdownMenuItem(
+                    value: e,
+                    child: Align(
+                      alignment: Alignment.centerRight,
+                      child: Text(e,
+                          style: const TextStyle(fontSize: 12, fontFamily: 'Cairo')),
+                    ),
+                  ))
               .toList(),
           onChanged: (v) => setState(() => _val = v),
         ),
@@ -205,14 +175,14 @@ class _CounterState extends State<_Counter> {
   int _v = 0;
 
   Widget _btn(IconData ic, Color bg, VoidCallback fn) => GestureDetector(
-    onTap: fn,
-    child: Container(
-      width: 28,
-      height: 28,
-      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-      child: Icon(ic, color: kWhite, size: 15),
-    ),
-  );
+        onTap: fn,
+        child: Container(
+          width: 28,
+          height: 28,
+          decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+          child: Icon(ic, color: kWhite, size: 15),
+        ),
+      );
 
   @override
   Widget build(BuildContext context) {
@@ -228,53 +198,35 @@ class _CounterState extends State<_Counter> {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              // + على اليسار (لأن RTL)
               _btn(Icons.add, kGreen, () => setState(() => _v++)),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 8),
-                child: Text(
-                  '$_v',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: kText,
-                  ),
-                ),
+                child: Text('$_v',
+                    style: const TextStyle(
+                        fontSize: 15, fontWeight: FontWeight.bold, color: kText)),
               ),
-              // - على اليمين
-              _btn(
-                Icons.remove,
-                const Color(0xFFEF5350),
-                () => setState(() {
-                  if (_v > 0) _v--;
-                }),
-              ),
+              _btn(Icons.remove, const Color(0xFFEF5350),
+                  () => setState(() { if (_v > 0) _v--; })),
             ],
           ),
         ),
         const SizedBox(height: 3),
-        Text(
-          widget.label,
-          style: const TextStyle(fontSize: 11, color: kTextSub),
-        ),
+        Text(widget.label,
+            style: const TextStyle(fontSize: 11, color: kTextSub, fontFamily: 'Cairo')),
       ],
     );
   }
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  REUSABLE: Rating Row  (label | bars | n/5)
+//  REUSABLE: Rating Row
 // ══════════════════════════════════════════════════════════════════════════════
 
 class _RatingRow extends StatelessWidget {
   final String label;
-  final int filled; // 0–5
+  final int filled;
   final Color color;
-  const _RatingRow({
-    required this.label,
-    required this.filled,
-    required this.color,
-  });
+  const _RatingRow({required this.label, required this.filled, required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -282,17 +234,10 @@ class _RatingRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 3.5),
       child: Row(
         children: [
-          // n/5  على اليسار
-          Text(
-            '$filled/5',
-            style: TextStyle(
-              fontSize: 11,
-              color: color,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
+          Text('$filled/5',
+              style: TextStyle(
+                  fontSize: 11, color: color, fontWeight: FontWeight.bold)),
           const SizedBox(width: 6),
-          // أشرطة
           Expanded(
             child: Row(
               children: List.generate(5, (i) {
@@ -310,14 +255,12 @@ class _RatingRow extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 8),
-          // label على اليمين
           SizedBox(
             width: 62,
-            child: Text(
-              label,
-              textAlign: TextAlign.right,
-              style: const TextStyle(fontSize: 12, color: kText),
-            ),
+            child: Text(label,
+                textAlign: TextAlign.right,
+                style: const TextStyle(
+                    fontSize: 12, color: kText, fontFamily: 'Cairo')),
           ),
         ],
       ),
@@ -356,10 +299,11 @@ class _ChipState extends State<_Chip> {
           children: [
             Icon(widget.icon, size: 13, color: _on ? kWhite : kTextSub),
             const SizedBox(width: 4),
-            Text(
-              widget.label,
-              style: TextStyle(fontSize: 11, color: _on ? kWhite : kText),
-            ),
+            Text(widget.label,
+                style: TextStyle(
+                    fontSize: 11,
+                    color: _on ? kWhite : kText,
+                    fontFamily: 'Cairo')),
           ],
         ),
       ),
@@ -378,175 +322,122 @@ class AddWorkspaceScreen extends StatefulWidget {
 }
 
 class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
-  // ── state ──────────────────────────────────────────────────────────────────
   bool _locationSelected = false;
 
-  // ── helpers ────────────────────────────────────────────────────────────────
   Widget _gap([double h = 10]) => SizedBox(height: h);
 
   Widget _card({required Widget child}) => Container(
-    width: double.infinity,
-    padding: const EdgeInsets.all(12),
-    decoration: BoxDecoration(
-      color: kWhite,
-      border: Border.all(color: kBorder),
-      borderRadius: BorderRadius.circular(8),
-    ),
-    child: child,
-  );
+        width: double.infinity,
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: kWhite,
+          border: Border.all(color: kBorder),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: child,
+      );
 
-  // ══════════════════════════════════════════════════════════════════════════
   @override
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: kGreenBg,
-        body: Column(
-          children: [
-            _buildAppBar(),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 10,
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // 1 ── المعلومات الأساسية
-                    _section1BasicInfo(),
-                    _gap(),
-
-                    // 2 ── بيانات التواصل
-                    _section2Contact(),
-                    _gap(),
-
-                    // 3 ── الموقع والعنوان
-                    _section3Location(),
-                    _gap(),
-
-                    // 4 ── أوقات العمل والإتاحة
-                    _section4WorkHours(),
-                    _gap(),
-
-                    // 5 ── المرافق الإضافية
-                    _section5Facilities(),
-                    _gap(),
-
-                    // 6 ── تقييم الخدمة الحالي
-                    _section6Rating(),
-                    _gap(),
-
-                    // 7 ── الطاقة
-                    _section7Capacity(),
-                    _gap(),
-
-                    // 8 ── التوزيع
-                    _section8Distribution(),
-                    _gap(),
-
-                    // 9 ── صور مدخل
-                    _section9Photos(),
-                    _gap(),
-
-                    // 10 ── رسالة تنبيه + زر إرسال
-                    _section10Submit(),
-                    _gap(20),
-                  ],
-                ),
-              ),
+        // ✅ AppBar بنفس أسلوب المشروع
+        appBar: AppBar(
+          backgroundColor: kGreen,
+          elevation: 0,
+          // زر الرجوع التلقائي (يعمل مع Navigator.pop تلقائياً)
+          iconTheme: const IconThemeData(color: kWhite),
+          title: const Text(
+            'طلب إضافة مساحة عمل',
+            style: TextStyle(
+              color: kWhite,
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Cairo',
             ),
-            _buildBottomNav(),
+          ),
+          centerTitle: true,
+          actions: [
+            IconButton(
+              icon: const Icon(Icons.home_outlined, color: kWhite),
+              onPressed: () {
+                // الرجوع لصفحة المدن (city) مع مسح الـ stack
+                Navigator.of(context).popUntil((route) => route.isFirst);
+              },
+            ),
           ],
+        ),
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              _section1BasicInfo(),
+              _gap(),
+              _section2Contact(),
+              _gap(),
+              _section3Location(),
+              _gap(),
+              _section4WorkHours(),
+              _gap(),
+              _section5Facilities(),
+              _gap(),
+              _section6Rating(),
+              _gap(),
+              _section7Capacity(),
+              _gap(),
+              _section8Distribution(),
+              _gap(),
+              _section9Photos(),
+              _gap(),
+              _section10Submit(),
+              _gap(30),
+            ],
+          ),
         ),
       ),
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  APP BAR
-  // ══════════════════════════════════════════════════════════════════════════
-
-  Widget _buildAppBar() {
-    final top = MediaQuery.of(context).padding.top;
-    return Container(
-      padding: EdgeInsets.only(top: top + 6, bottom: 10, left: 14, right: 14),
-      color: kGreen,
-      child: const Row(
-        children: [
-          // سهم رجوع على اليمين (RTL → leading)
-          Icon(Icons.arrow_forward_ios, color: kWhite, size: 18),
-          Expanded(
-            child: Text(
-              'طلب إضافة مساحة عمل',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: kWhite,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-          // أيقونة البيت على اليسار
-          Icon(Icons.home_outlined, color: kWhite, size: 22),
-        ],
-      ),
-    );
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 1 – المعلومات الأساسية
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 1: المعلومات الأساسية ──────────────────────────────────────────
   Widget _section1BasicInfo() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeader(
-          title: 'المعلومات الأساسية',
-          icon: Icons.description_outlined,
-        ),
+        const _SectionHeader(title: 'المعلومات الأساسية', icon: Icons.description_outlined),
         _gap(8),
-        const _InputField(hint: 'اسم المساحة العمل باللغة العربية  *'),
+        const _InputField(hint: 'اسم المساحة باللغة العربية  *'),
         _gap(6),
-        const _InputField(hint: 'اسم المساحة العمل باللغة الإنجليزية  *'),
+        const _InputField(hint: 'اسم المساحة باللغة الإنجليزية  *'),
       ],
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 2 – بيانات التواصل
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 2: بيانات التواصل ──────────────────────────────────────────────
   Widget _section2Contact() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeader(
-          title: 'بيانات التواصل',
-          icon: Icons.phone_outlined,
-        ),
+        const _SectionHeader(title: 'بيانات التواصل', icon: Icons.phone_outlined),
         _gap(8),
-        // رقم الهاتف مع كود الدولة
         Row(
           children: [
-            // حقل الرقم
             const Expanded(
               child: TextField(
                 textAlign: TextAlign.right,
                 textDirection: TextDirection.rtl,
                 keyboardType: TextInputType.phone,
+                style: TextStyle(fontFamily: 'Cairo', fontSize: 13),
                 decoration: InputDecoration(
                   hintText: 'رقم الهاتف',
-                  hintStyle: TextStyle(color: kHint, fontSize: 12),
+                  hintStyle: TextStyle(color: kHint, fontSize: 12, fontFamily: 'Cairo'),
                   hintTextDirection: TextDirection.rtl,
                   filled: true,
                   fillColor: kWhite,
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 11,
-                  ),
+                  contentPadding:
+                      EdgeInsets.symmetric(horizontal: 12, vertical: 11),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.only(
                       topRight: Radius.circular(8),
@@ -564,7 +455,6 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
                 ),
               ),
             ),
-            // كود الدولة +972
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 13),
               decoration: const BoxDecoration(
@@ -583,23 +473,20 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
                 children: [
                   Icon(Icons.keyboard_arrow_down, color: kGreen, size: 16),
                   SizedBox(width: 2),
-                  Text(
-                    '+972',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: kText,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  Text('+970',
+                      style: TextStyle(
+                          fontSize: 12,
+                          color: kText,
+                          fontWeight: FontWeight.w600,
+                          fontFamily: 'Cairo')),
                 ],
               ),
             ),
           ],
         ),
         _gap(6),
-        // البريد الإلكتروني
         const _InputField(
-          hint: 'اسم المستخدم',
+          hint: 'البريد الإلكتروني أو اسم المستخدم',
           leadingIcon: Icons.alternate_email,
           keyboardType: TextInputType.emailAddress,
         ),
@@ -607,36 +494,24 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 3 – الموقع والعنوان
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 3: الموقع والعنوان ─────────────────────────────────────────────
   Widget _section3Location() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeader(
-          title: 'الموقع والعنوان',
-          icon: Icons.location_on_outlined,
-        ),
+        const _SectionHeader(title: 'الموقع والعنوان', icon: Icons.location_on_outlined),
         _gap(8),
+        // ✅ نفس المدن الموجودة في city.dart
         const _DropdownField(
           hint: 'المحافظة / المنطقة',
           leadingIcon: Icons.map_outlined,
-          items: [
-            'رام الله والبيرة',
-            'نابلس',
-            'الخليل',
-            'بيت لحم',
-            'جنين',
-            'طولكرم',
-          ],
+          items: ['غزة', 'الوسطى', 'خانيونس'],
         ),
         _gap(6),
         const _DropdownField(
-          hint: 'نوع العقار',
+          hint: 'نوع المساحة',
           leadingIcon: Icons.business_outlined,
-          items: ['مكتب', 'شقة', 'فيلا', 'مستودع', 'أخرى'],
+          items: ['مقهى', 'مكتبة', 'مركز دراسي', 'مساحة مشتركة', 'أخرى'],
         ),
         _gap(6),
         const _InputField(
@@ -644,27 +519,32 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
           leadingIcon: Icons.location_city_outlined,
         ),
         _gap(8),
-        // ── زر تحديد الموقع الحالي (أخضر معبأ)
         GestureDetector(
           onTap: () => setState(() => _locationSelected = !_locationSelected),
           child: Container(
             padding: const EdgeInsets.symmetric(vertical: 11),
             decoration: BoxDecoration(
-              color: kGreen,
+              color: _locationSelected ? const Color(0xFF2E5815) : kGreen,
               borderRadius: BorderRadius.circular(8),
             ),
-            child: const Row(
+            child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.edit_location_alt_outlined, color: kWhite, size: 18),
-                SizedBox(width: 6),
+                Icon(
+                  _locationSelected
+                      ? Icons.check_circle_outline
+                      : Icons.edit_location_alt_outlined,
+                  color: kWhite,
+                  size: 18,
+                ),
+                const SizedBox(width: 6),
                 Text(
-                  'تحديد الموقع الحالي',
-                  style: TextStyle(
-                    color: kWhite,
-                    fontSize: 13,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  _locationSelected ? 'تم تحديد الموقع ✓' : 'تحديد الموقع الحالي',
+                  style: const TextStyle(
+                      color: kWhite,
+                      fontSize: 13,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Cairo'),
                 ),
               ],
             ),
@@ -674,37 +554,30 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 4 – أوقات العمل والإتاحة
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 4: أوقات العمل ─────────────────────────────────────────────────
   Widget _section4WorkHours() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         const _SectionHeader(
-          title: 'أوقات العمل والإتاحة',
-          icon: Icons.access_time_outlined,
-        ),
+            title: 'أوقات العمل والإتاحة', icon: Icons.access_time_outlined),
         _gap(8),
         _card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // مثال توضيحي
               const Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  Text(
-                    'مثال: 9:00 م إلى 11:00 م',
-                    style: TextStyle(fontSize: 11, color: kTextSub),
-                  ),
+                  Text('مثال: السبت–الخميس من 8:00 ص إلى 11:00 م',
+                      style: TextStyle(
+                          fontSize: 11, color: kTextSub, fontFamily: 'Cairo')),
                   SizedBox(width: 5),
                   Icon(Icons.access_time, size: 14, color: kTextSub),
                 ],
               ),
               _gap(8),
-              const _InputField(hint: 'أوقات الإتاحة سبو ..'),
+              const _InputField(hint: 'أوقات الإتاحة (الأيام والساعات)..'),
             ],
           ),
         ),
@@ -712,73 +585,52 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 5 – المرافق الإضافية
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 5: المرافق الإضافية ────────────────────────────────────────────
   Widget _section5Facilities() {
-    // صف 1: داخلي / في الهواء الطلق / مشروبات / مشاريع
-    // صف 2: إضافات مياه / مطبخ / إنترنت لاسلكي / اكتب
+    // ✅ نفس الفلاتر الموجودة في filter_page.dart
     final row1 = [
-      (Icons.chair_outlined, 'داخلي'),
-      (Icons.wb_sunny_outlined, 'في الهواء الطلق'),
+      (Icons.flash_on, 'كهرباء'),
+      (Icons.wifi_outlined, 'واي فاي'),
       (Icons.local_cafe_outlined, 'مشروبات'),
-      (Icons.work_outline, 'مشاريع'),
+      (Icons.directions_bus, 'مواصلات'),
     ];
     final row2 = [
-      (Icons.water_drop_outlined, 'إضافات مياه'),
+      (Icons.wc, 'دورات مياه'),
       (Icons.kitchen_outlined, 'مطبخ'),
-      (Icons.wifi_outlined, 'إنترنت لاسلكي'),
-      (Icons.keyboard_outlined, 'اكتب'),
+      (Icons.wb_sunny_outlined, 'في الهواء الطلق'),
+      (Icons.keyboard_outlined, 'مكاتب'),
     ];
 
     Widget chipRow(List<(IconData, String)> chips) => Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: chips.map((c) => _Chip(icon: c.$1, label: c.$2)).toList(),
-    );
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: chips.map((c) => _Chip(icon: c.$1, label: c.$2)).toList(),
+        );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeader(
-          title: 'المرافق الإضافية',
-          icon: Icons.star_outline,
-        ),
+        const _SectionHeader(title: 'المرافق والخدمات', icon: Icons.star_outline),
         _gap(8),
         _card(child: Column(children: [chipRow(row1), _gap(8), chipRow(row2)])),
       ],
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 6 – تقييم الخدمة الحالي
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 6: تقييم الخدمة ────────────────────────────────────────────────
   Widget _section6Rating() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeader(
-          title: 'تقييم الخدمة الحالي',
-          icon: Icons.bar_chart,
-        ),
+        const _SectionHeader(title: 'تقييم الخدمة الحالي', icon: Icons.bar_chart),
         _gap(8),
         _card(
           child: const Column(
             children: [
-              _RatingRow(
-                label: 'الإنترنت',
-                filled: 4,
-                color: Color(0xFF4CAF50),
-              ),
-              _RatingRow(label: 'الأمان', filled: 3, color: Color(0xFF2196F3)),
-              _RatingRow(
-                label: 'التجهيزات',
-                filled: 5,
-                color: Color(0xFFFF9800),
-              ),
-              _RatingRow(label: 'الهدوء', filled: 3, color: Color(0xFF9C27B0)),
-              _RatingRow(label: 'الأسعار', filled: 4, color: Color(0xFFE91E63)),
+              _RatingRow(label: 'الإنترنت',   filled: 4, color: Color(0xFF386A1B)),
+              _RatingRow(label: 'الأمان',     filled: 3, color: Color(0xFF2196F3)),
+              _RatingRow(label: 'التجهيزات',  filled: 5, color: Color(0xFFFF9800)),
+              _RatingRow(label: 'الهدوء',     filled: 3, color: Color(0xFF9C27B0)),
+              _RatingRow(label: 'الأسعار',    filled: 4, color: Color(0xFFE91E63)),
             ],
           ),
         ),
@@ -786,42 +638,37 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 7 – الطاقة
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 7: الطاقة الاستيعابية ─────────────────────────────────────────
   Widget _section7Capacity() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        const _SectionHeader(title: 'الطاقة', icon: Icons.people_outline),
+        const _SectionHeader(title: 'الطاقة الاستيعابية', icon: Icons.people_outline),
         _gap(8),
         _card(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              // اسم مدير الطاقة
               const _InputField(
-                hint: 'اسم مدير الطاقة (الشخص المسؤول)',
+                hint: 'اسم المسؤول عن المساحة',
                 leadingIcon: Icons.person_outline,
               ),
               _gap(10),
-              // صف: صور الأشخاص/الأماكن + dropdown "ساعة"
-              const Row(
+              Row(
                 children: [
-                  // dropdown ساعة
                   Expanded(
                     child: _DropdownField(
-                      hint: 'ساعة',
-                      items: ['ساعة', 'يوم', 'أسبوع', 'شهر'],
+                      hint: 'تسعيرة الإيجار',
+                      items: const ['بالساعة', 'باليوم', 'بالأسبوع', 'بالشهر'],
                     ),
                   ),
-                  SizedBox(width: 8),
-                  Expanded(
+                  const SizedBox(width: 8),
+                  const Expanded(
                     child: Text(
-                      'صور مدخل الأشخاص/الأماكن',
+                      'نظام التسعير المعتمد',
                       textAlign: TextAlign.right,
-                      style: TextStyle(fontSize: 11, color: kTextSub),
+                      style: TextStyle(
+                          fontSize: 11, color: kTextSub, fontFamily: 'Cairo'),
                     ),
                   ),
                 ],
@@ -833,47 +680,39 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 8 – التوزيع  (4 عدادات + 0 -)
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 8: التوزيع ─────────────────────────────────────────────────────
   Widget _section8Distribution() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // رأس القسم مع أيقونة + خضراء
         Row(
           mainAxisAlignment: MainAxisAlignment.end,
           children: [
-            const Text(
-              'التوزيع',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: kGreen,
-              ),
-            ),
+            const Text('عدد المقاعد المتاحة',
+                style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: kGreen,
+                    fontFamily: 'Cairo')),
             const SizedBox(width: 6),
             Container(
               width: 22,
               height: 22,
-              decoration: const BoxDecoration(
-                color: kGreen,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(Icons.add, color: kWhite, size: 14),
+              decoration:
+                  const BoxDecoration(color: kGreen, shape: BoxShape.circle),
+              child: const Icon(Icons.event_seat, color: kWhite, size: 14),
             ),
           ],
         ),
         _gap(8),
         _card(
-          child: const Row(
+          child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              _Counter(label: 'ساعة'),
-              _Counter(label: 'يوم'),
-              _Counter(label: 'أسبوع'),
-              _Counter(label: 'شهر'),
+            children: const [
+              _Counter(label: 'فردي'),
+              _Counter(label: 'ثنائي'),
+              _Counter(label: 'مجموعة'),
+              _Counter(label: 'قاعة'),
             ],
           ),
         ),
@@ -881,62 +720,46 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 9 – صور مدخل الطلب / مدة التمديد
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 9: الصور ───────────────────────────────────────────────────────
   Widget _section9Photos() {
     return _card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
-          // السطر العلوي: "صور مدخل الطلب" + أيقونة صورة
           const Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Text(
-                'صور مدخل الطلب',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: kText,
-                ),
-              ),
+              Text('صور المساحة',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: kText,
+                      fontFamily: 'Cairo')),
               SizedBox(width: 5),
               Icon(Icons.add_a_photo_outlined, color: kGreen, size: 17),
             ],
           ),
           _gap(8),
-          // نص "السماح بالتمديد من الطلب (أسبو - 1 أسبو ...)"
           const Text(
-            'السماح بالتمديد من الطلب (أسبو - ١ أسبو ...)',
+            'أضف صوراً واضحة للمدخل، القاعات، والمرافق (حد أقصى 5 صور)',
             textAlign: TextAlign.right,
-            style: TextStyle(fontSize: 11, color: kTextSub),
+            style: TextStyle(fontSize: 11, color: kTextSub, fontFamily: 'Cairo'),
           ),
           _gap(8),
-          // صف عدادات التمديد: + + + +
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
               4,
               (_) => Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 7,
-                ),
+                width: 60,
+                height: 60,
                 decoration: BoxDecoration(
-                  color: kWhite,
-                  border: Border.all(color: kBorder),
+                  color: kGreenLight,
+                  border: Border.all(color: const Color(0xFF6A994E)),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Text(
-                  '+',
-                  style: TextStyle(
-                    fontSize: 18,
-                    color: kGreen,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                child: const Icon(Icons.add_photo_alternate_outlined,
+                    size: 28, color: kGreen),
               ),
             ),
           ),
@@ -945,121 +768,81 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     );
   }
 
-  // ══════════════════════════════════════════════════════════════════════════
-  //  SECTION 10 – رسالة التنبيه + زر الإرسال
-  // ══════════════════════════════════════════════════════════════════════════
-
+  // ── SECTION 10: الإرسال ────────────────────────────────────────────────────
   Widget _section10Submit() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // رسالة التنبيه الصفراء
+        // رسالة تنبيه بألوان تتناسب مع الثيم
         Container(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: const Color(0xFFFFF9C4),
-            border: Border.all(color: const Color(0xFFFFEE58)),
+            color: const Color(0xFFF1F8E9),
+            border: Border.all(color: const Color(0xFF6A994E).withOpacity(0.4)),
             borderRadius: BorderRadius.circular(8),
           ),
-          child: const Text(
-            'عزيزتي/ي سيقوم فريق إدارة المنصة بمراجعة طلبك والتواصل معك في أقرب وقت ممكن. شكراً لتسجيلك في المنصة.',
-            textAlign: TextAlign.right,
-            style: TextStyle(
-              fontSize: 11,
-              color: Color(0xFF555500),
-              height: 1.55,
-            ),
-          ),
-        ),
-        _gap(12),
-        // زر إرسال الطلب
-        GestureDetector(
-          onTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text(
-                  'تم إرسال الطلب بنجاح ✓',
-                  textAlign: TextAlign.center,
-                ),
-                backgroundColor: kGreen,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
+          child: const Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: Text(
+                  'سيقوم فريق StudySpot بمراجعة طلبك والتواصل معك في أقرب وقت. شكراً لمساهمتك في دعم مجتمع الدراسة.',
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF386A1B),
+                      height: 1.6,
+                      fontFamily: 'Cairo'),
                 ),
               ),
-            );
-          },
-          child: Container(
-            padding: const EdgeInsets.symmetric(vertical: 13),
-            decoration: BoxDecoration(
-              color: kGreen,
-              borderRadius: BorderRadius.circular(10),
+              SizedBox(width: 6),
+              Icon(Icons.info_outline, color: Color(0xFF6A994E), size: 18),
+            ],
+          ),
+        ),
+        _gap(14),
+        // ✅ زر الإرسال بنفس أسلوب أزرار المشروع
+        SizedBox(
+          height: 55,
+          child: ElevatedButton(
+            onPressed: () {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text(
+                    'تم إرسال الطلب بنجاح ✓',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontFamily: 'Cairo', fontSize: 14),
+                  ),
+                  backgroundColor: kGreen,
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10)),
+                ),
+              );
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: kGreen,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(15)),
             ),
             child: const Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Icon(Icons.send, color: kWhite, size: 18),
-                SizedBox(width: 8),
+                Icon(Icons.send, color: kWhite, size: 20),
+                SizedBox(width: 10),
                 Text(
                   'إرسال الطلب',
                   style: TextStyle(
-                    color: kWhite,
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                  ),
+                      color: kWhite,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Cairo'),
                 ),
               ],
             ),
           ),
         ),
       ],
-    );
-  }
-
-  // ══════════════════════════════════════════════════════════════════════════
-  //  BOTTOM NAV  (4 أيقونات فقط بدون نص)
-  // ══════════════════════════════════════════════════════════════════════════
-
-  Widget _buildBottomNav() {
-    final bottom = MediaQuery.of(context).padding.bottom;
-    return Container(
-      padding: EdgeInsets.only(
-        top: 10,
-        bottom: bottom + 8,
-        left: 20,
-        right: 20,
-      ),
-      decoration: const BoxDecoration(
-        color: kWhite,
-        border: Border(top: BorderSide(color: Color(0xFFEEEEEE))),
-      ),
-      child: const Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          Icon(Icons.home_outlined, color: kTextSub, size: 26),
-          Icon(Icons.search_outlined, color: kTextSub, size: 26),
-          // أيقونة الإضافة – مميزة بدائرة خضراء
-          _AddNavIcon(),
-          Icon(Icons.person_outline, color: kTextSub, size: 26),
-        ],
-      ),
-    );
-  }
-}
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  أيقونة الإضافة في الـ Bottom Nav (دائرة خضراء)
-// ══════════════════════════════════════════════════════════════════════════════
-
-class _AddNavIcon extends StatelessWidget {
-  const _AddNavIcon();
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 44,
-      height: 44,
-      decoration: const BoxDecoration(color: kGreen, shape: BoxShape.circle),
-      child: const Icon(Icons.add, color: kWhite, size: 26),
     );
   }
 }
