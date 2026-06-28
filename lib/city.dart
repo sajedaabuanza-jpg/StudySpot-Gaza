@@ -5,6 +5,7 @@ import 'package:studyspot/khanuonis/khanyonis.dart';
 import 'package:studyspot/gaza/gaza.dart';
 import 'package:studyspot/googleLogin/AuthService.dart';
 import 'package:studyspot/googleLogin/googleLogin.dart' as loginUi;
+import 'package:studyspot/favorite/favorite.dart';
 
 
 bool isDarkMode = false;
@@ -30,6 +31,14 @@ class _cityState extends State<city> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF386A1B)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Color(0xFF386A1B)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const favorite()));
+            },
+          ),
+        ],
       ),
       // --- الـ Drawer المعدل ---
       drawer: Drawer(

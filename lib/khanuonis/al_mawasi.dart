@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:studyspot/favorite/favorite.dart';
 import '../card/WorkspaceCard.dart';
 import '../details/workspace_details_page.dart'; // تأكد من صحة مسار صفحة التفاصيل عندك
 
@@ -42,6 +43,14 @@ class _al_mawasiState extends State<al_mawasi> {
         title: const Text("المواصي", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Color.fromARGB(255, 168, 219, 138)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const favorite()));
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       body: StreamBuilder<QuerySnapshot>(
@@ -92,6 +101,7 @@ class _al_mawasiState extends State<al_mawasi> {
               };              double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
+                workspaceId: item['id'],
                 title: item['name'] ?? 'بدون اسم',
                 location: "${item['city'] ?? ''} - ${item['district'] ?? ''}",
                 imagePath: item['image_url'] ?? '',

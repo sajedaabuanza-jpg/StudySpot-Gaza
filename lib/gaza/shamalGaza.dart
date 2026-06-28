@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // استيراد الفايرستور
 import 'package:studyspot/card/WorkspaceCard.dart';
-import 'package:studyspot/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
+import 'package:studyspot/details/workspace_details_page.dart';
+import 'package:studyspot/favorite/favorite.dart'; // استيراد صفحة التفاصيل
 
 class shamalGaza extends StatefulWidget {
   const shamalGaza({super.key});
@@ -42,6 +43,14 @@ class _shamalGazaState extends State<shamalGaza> {
         title: const Text("شمال غزة", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Color.fromARGB(255, 168, 219, 138)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const favorite()));
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       // استخدام StreamBuilder لجلب البيانات بشكل حي ومباشر من الفايرستور
@@ -73,6 +82,7 @@ class _shamalGazaState extends State<shamalGaza> {
               };              double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
+                workspaceId: item['id'],
                 title: item['name'] ?? 'بدون اسم',
                 location: "${item['city'] ?? ''} - ${item['district'] ?? ''}",
                 imagePath: item['image_url'] ?? '',

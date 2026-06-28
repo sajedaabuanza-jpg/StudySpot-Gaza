@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:studyspot/card/WorkspaceCard.dart';
 import 'package:studyspot/details/workspace_details_page.dart';
+import 'package:studyspot/favorite/favorite.dart';
 
 class AlBureij extends StatefulWidget {
   const AlBureij({super.key});
@@ -42,6 +43,14 @@ class _AlBureijState extends State<AlBureij> {
         title: const Text("البريج", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Color.fromARGB(255, 168, 219, 138)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const favorite()));
+            },
+          ),
+        ],
       ),
       body: StreamBuilder<QuerySnapshot>(
         stream: FirebaseFirestore.instance
@@ -71,6 +80,7 @@ class _AlBureijState extends State<AlBureij> {
               };              double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
+                workspaceId: item['id'],
                 title: item['name'] ?? 'بدون اسم',
                 location: "${item['city'] ?? ''} - ${item['district'] ?? ''}",
                 imagePath: item['image_url'] ?? '',

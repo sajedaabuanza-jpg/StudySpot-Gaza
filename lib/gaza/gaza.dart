@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:studyspot/favorite/favorite.dart';
 import 'package:studyspot/gaza/al_nusser.dart';
 import 'package:studyspot/gaza/alremal.dart';
 import 'package:studyspot/gaza/shamalGaza.dart';
@@ -18,6 +19,14 @@ class gaza extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF386A1B)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Color(0xFF386A1B)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const favorite()));
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
