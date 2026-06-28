@@ -4,7 +4,7 @@ import 'package:flutter/foundation.dart' show defaultTargetPlatform, TargetPlatf
 class DefaultFirebaseOptions {
   static FirebaseOptions get currentPlatform {
     if (kIsWeb) {
-      return web; // قمنا بتغيير الخطأ ليعيد إعدادات الويب فوراً!
+      return web;
     }
     switch (defaultTargetPlatform) {
       case TargetPlatform.android:
@@ -16,23 +16,23 @@ class DefaultFirebaseOptions {
     }
   }
 
-  // 1. أضيفي إعدادات الويب هنا (انسخي الرموز من موقع الفايربيز للويب)
+  // إعدادات الويب المحدثة والمتوافقة مع كود الـ Pull الجديد
   static const FirebaseOptions web = FirebaseOptions(
-    apiKey: 'AIzaSyDAfmi_-AZi4T0qltnlM8p_gwUUo2vcnhw',
-    appId: '1:353988480054:web:d4bf5ab6d884bed52a5c97',
-    messagingSenderId: '353988480054',
-    projectId: 'nearestworkspace',
-    storageBucket: 'nearestworkspace.firebasestorage.app',
-    authDomain: 'nearestworkspace.firebaseapp.com',
-    measurementId: 'G-EPRRJ31VWD',
+    apiKey: 'AIzaSyArGe4b8b3jPU59_VC9vGgeeTbwevwQUhk',
+    appId: '1:644719264139:web:fd502ca45a8fbfab70ef8e',
+    messagingSenderId: '644719264139',
+    projectId: 'studyspot-gaza',
+    authDomain: 'studyspot-gaza.firebaseapp.com',
+    storageBucket: 'studyspot-gaza.firebasestorage.app',
+    measurementId: 'G-68Q9HWCST1',
   );
 
-  // 2. إعدادات الأندرويد الحالية السليمة (اتركيها كما هي)
+  // إعدادات الأندرويد المحدثة والمتوافقة مع كود الـ Pull الجديد
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyAogj0yd5S4ZsK1-ijaN9JRH1iaWph6qT8',
-    appId: '1:353988480054:android:ee749b732dd97e122a5c97',
-    messagingSenderId: '353988480054',
-    projectId: 'nearestworkspace',
-    storageBucket: 'nearestworkspace.firebasestorage.app',
+    apiKey: 'AIzaSyDFjmELB0z48hIh9ndM63a9VzSJ51ANoB8',
+    appId: '1:644719264139:android:b72ef29cea8f6e0d70ef8e',
+    messagingSenderId: '644719264139',
+    projectId: 'studyspot-gaza',
+    storageBucket: 'studyspot-gaza.firebasestorage.app',
   );
 }
