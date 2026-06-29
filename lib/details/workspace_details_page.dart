@@ -1,15 +1,618 @@
+// import 'package:flutter/material.dart';
+// import 'package:url_launcher/url_launcher.dart';
+// // استيراد صفحة التقييمات
+// import 'ratings_screen.dart';
+
+// class workspace_details_page extends StatelessWidget {
+//   final Map<String, dynamic> workspace;
+
+//   const workspace_details_page({
+//     super.key,
+//     required this.workspace,
+//   });
+
+//   // ✨ دالة ذكية لإصلاح روابط ImgBB العادية وتحويلها لروابط مباشرة تلقائياً هنا أيضاً
+//   String _getCleanImageUrl(String url) {
+//     final trimmedUrl = url.trim();
+//     if (trimmedUrl.contains('ibb.co/') && !trimmedUrl.contains('i.ibb.co/')) {
+//       final segments = trimmedUrl.split('/');
+//       if (segments.isNotEmpty) {
+//         final id = segments.last;
+//         return 'https://i.ibb.co/$id/image.png';
+//       }
+//     }
+//     return trimmedUrl;
+//   }
+
+//   // 1. دالة حساب متوسط التقييم العام من حقل quality_scores
+//   double _getAverageRating(String? qualityScores) {
+//     if (qualityScores == null || qualityScores.isEmpty) return 4.0;
+//     try {
+//       final pairs = qualityScores.split('|');
+//       double total = 0;
+//       int count = 0;
+//       for (var pair in pairs) {
+//         final parts = pair.split(':');
+//         if (parts.length == 2) {
+//           final score = double.tryParse(parts[1]);
+//           if (score != null) {
+//             total += score;
+//             count++;
+//           }
+//         }
+//       }
+//       return count > 0 ? (total / count) : 4.0;
+//     } catch (e) {
+//       return 4.0;
+//     }
+//   }
+
+//   // 2. دالة استخراج قيم الجودة الفردية للمؤشرات
+//   double _getSpecificScore(String? qualityScores, String key) {
+//     if (qualityScores == null || qualityScores.isEmpty) return 3.0;
+//     try {
+//       final pairs = qualityScores.split('|');
+//       for (var pair in pairs) {
+//         final parts = pair.split(':');
+//         if (parts.length == 2 && parts[0].trim().toLowerCase() == key.toLowerCase()) {
+//           return double.tryParse(parts[1]) ?? 3.0;
+//         }
+//       }
+//     } catch (_) {}
+//     return 3.0;
+//   }
+
+//   // 3. دالة تفكيك حقل خطط الأسعار (pricing_plans) ديناميكياً
+//   List<Map<String, String>> _parsePricingPlans(String? pricingPlansStr) {
+//     if (pricingPlansStr == null || pricingPlansStr.isEmpty) {
+//       return [
+//         {"title": "السعر", "price": "غير محدد", "sub": "يرجى التواصل لمعرفة السعر"}
+//       ];
+//     }
+//     List<Map<String, String>> plans = [];
+//     try {
+//       final parts = pricingPlansStr.split('|');
+//       for (var part in parts) {
+//         final kv = part.split('=');
+//         if (kv.length == 2) {
+//           plans.add({
+//             "title": kv[0].trim(),
+//             "price": kv[1].trim(),
+//             "sub": kv[0].trim().contains("شهر") ? "دخول غير محدود طوال الشهر" : "سعر اقتصادي"
+//           });
+//         }
+//       }
+//     } catch (_) {}
+
+//     if (plans.isEmpty) {
+//       plans.add({"title": "تكلفة الدخول", "price": pricingPlansStr, "sub": ""});
+//     }
+//     return plans;
+//   }
+
+//   @override
+//   Widget build(BuildContext context) {
+//     double rating = _getAverageRating(workspace['quality_scores']);
+
+//     List<String> servicesList = (workspace['filters_csv'] ?? '').toString().split(',');
+//     servicesList = servicesList.map((s) => s.trim().toLowerCase()).where((s) => s.isNotEmpty).toList();
+
+//     List<Map<String, String>> pricingPlans = _parsePricingPlans(workspace['pricing_plans']);
+
+//     // تنظيف الرابط القادم من الفايرستور قبل عرضه
+//     final cleanUrl = _getCleanImageUrl(workspace['image_url'] ?? '');
+
+//     return Scaffold(
+//       backgroundColor: const Color(0xFFF2F5E8),
+//       body: SingleChildScrollView(
+//         child: Column(
+//           children: [
+//             // 1. هيدر الصفحة والصورة العلوية
+//             Stack(
+//               children: [
+//                 SizedBox(
+//                   height: 320,
+//                   width: double.infinity,
+//                   child: ClipRRect(
+//                     borderRadius: const BorderRadius.only(
+//                       bottomLeft: Radius.circular(40),
+//                       bottomRight: Radius.circular(40),
+//                     ),
+//                     child: cleanUrl.isEmpty || !cleanUrl.startsWith('http')
+//                         ? Container(
+//                       color: Colors.grey[300],
+//                       child: const Icon(Icons.image_not_supported, size: 60, color: Colors.grey),
+//                     )
+//                         : Image.network(
+//                       cleanUrl,
+//                       fit: BoxFit.cover,
+//                       errorBuilder: (context, error, stackTrace) => Container(
+//                         color: Colors.grey[300],
+//                         child: const Column(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             Icon(Icons.broken_image, size: 60, color: Colors.grey),
+//                             SizedBox(height: 8),
+//                             Text("رابط الصورة تالف أو غير مدعوم", style: TextStyle(color: Colors.grey, fontFamily: 'Cairo')),
+//                           ],
+//                         ),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//                 Container(
+//                   height: 320,
+//                   decoration: BoxDecoration(
+//                     borderRadius: const BorderRadius.only(
+//                       bottomLeft: Radius.circular(40),
+//                       bottomRight: Radius.circular(40),
+//                     ),
+//                     gradient: LinearGradient(
+//                       begin: Alignment.topCenter,
+//                       end: Alignment.bottomCenter,
+//                       colors: [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.65)],
+//                     ),
+//                   ),
+//                 ),
+//                 Positioned(
+//                   top: 40,
+//                   left: 20,
+//                   child: IconButton(
+//                     icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 28),
+//                     onPressed: () => Navigator.pop(context),
+//                   ),
+//                 ),
+//                 const Positioned(
+//                   top: 40,
+//                   right: 20,
+//                   child: Icon(Icons.favorite_border, color: Colors.white, size: 30),
+//                 ),
+//                 Positioned(
+//                   top: 45,
+//                   left: 100,
+//                   right: 100,
+//                   child: Container(
+//                     padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+//                     decoration: BoxDecoration(
+//                       color: const Color(0xFFD97706),
+//                       borderRadius: BorderRadius.circular(20),
+//                     ),
+//                     child: Row(
+//                       mainAxisSize: MainAxisSize.min,
+//                       mainAxisAlignment: MainAxisAlignment.center,
+//                       children: [
+//                         const Icon(Icons.bolt, color: Colors.white, size: 16),
+//                         const SizedBox(width: 4),
+//                         Text(
+//                           workspace['electricity_details'] != null && workspace['electricity_details'].toString().contains("24")
+//                               ? "كهرباء متوفرة دائمًا"
+//                               : "كهرباء متوفرة",
+//                           style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Cairo'),
+//                         ),
+//                       ],
+//                     ),
+//                   ),
+//                 ),
+//                 Positioned(
+//                   bottom: 25,
+//                   right: 25,
+//                   left: 25,
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.end,
+//                     children: [
+//                       Text(
+//                         workspace['name'] ?? 'مساحة عمل',
+//                         style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+//                         textAlign: TextAlign.right,
+//                       ),
+//                       const SizedBox(height: 4),
+//                       Text(
+//                         "${workspace['city'] ?? ''} - ${workspace['district'] ?? ''}",
+//                         style: const TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Cairo'),
+//                         textAlign: TextAlign.right,
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//               ],
+//             ),
+
+//             Padding(
+//               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+//               child: Column(
+//                 children: [
+//                   // 2. ساعات العمل والتقييم
+//                   Row(
+//                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//                     children: [
+//                       Container(
+//                         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+//                         decoration: BoxDecoration(
+//                           border: Border.all(color: const Color(0xFFD97706), width: 1.5),
+//                           borderRadius: BorderRadius.circular(20),
+//                         ),
+//                         child: Text(
+//                           workspace['working_hours'] ?? 'غير محدد',
+//                           style: const TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo'),
+//                         ),
+//                       ),
+//                       Row(
+//                         children: [
+//                           Text(
+//                             rating.toStringAsFixed(1),
+//                             style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+//                           ),
+//                           const SizedBox(width: 5),
+//                           Row(
+//                             children: List.generate(5, (index) {
+//                               return Icon(
+//                                 index < rating.round() ? Icons.star : Icons.star_border,
+//                                 color: Colors.orange,
+//                                 size: 22,
+//                               );
+//                             }),
+//                           ),
+//                         ],
+//                       ),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 20),
+
+//                   // 3. شارات الفلاتر
+//                   Wrap(
+//                     spacing: 10,
+//                     runSpacing: 10,
+//                     alignment: WrapAlignment.end,
+//                     children: [
+//                       if (servicesList.contains('drinks') || servicesList.contains('food') || servicesList.contains('cafe'))
+//                         _buildFilterBadge("طعام ومشروبات", Icons.fastfood, const Color(0xFFD4E6C1)),
+//                       if (servicesList.contains('wc'))
+//                         _buildFilterBadge("دورات مياه", Icons.wc, const Color(0xFFD4E6C1)),
+//                       _buildFilterBadge("مقاعد مريحة", Icons.chair, const Color(0xFFD4E6C1)),
+//                       _buildFilterBadge("بيئة عمل", Icons.laptop, const Color(0xFFBFE3E8)),
+//                       if (servicesList.contains('internet') || servicesList.contains('wifi'))
+//                         _buildFilterBadge("واي فاي", Icons.wifi, const Color(0xFFD4E6C1)),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 25),
+
+//                   // 4. خطط الأسعار
+//                   _buildSectionTitle("الأسعار وخطط الاشتراك", Icons.payments),
+//                   const SizedBox(height: 12),
+//                   ListView.builder(
+//                     shrinkWrap: true,
+//                     physics: const NeverScrollableScrollPhysics(),
+//                     itemCount: pricingPlans.length,
+//                     itemBuilder: (context, index) {
+//                       return Padding(
+//                         padding: const EdgeInsets.only(bottom: 10),
+//                         child: _buildPriceCard(
+//                             pricingPlans[index]['title']!,
+//                             pricingPlans[index]['price']!,
+//                             pricingPlans[index]['sub']!,
+//                             isFullWidth: true
+//                         ),
+//                       );
+//                     },
+//                   ),
+//                   const SizedBox(height: 25),
+
+//                   // 5. مؤشرات الجودة
+//                   _buildSectionTitle("مؤشرات الجودة الحاليّة", Icons.analytics_outlined),
+//                   const SizedBox(height: 12),
+//                   Container(
+//                     padding: const EdgeInsets.all(15),
+//                     decoration: BoxDecoration(
+//                       color: Colors.white,
+//                       borderRadius: BorderRadius.circular(20),
+//                     ),
+//                     child: Column(
+//                       children: [
+//                         _buildQualityIndicator("الإنترنت", _getSpecificScore(workspace['quality_scores'], 'internet'), Colors.blue),
+//                         _buildQualityIndicator("الإستقرار", _getSpecificScore(workspace['quality_scores'], 'stability'), Colors.blueAccent),
+//                         _buildQualityIndicator("الكهرباء", _getSpecificScore(workspace['quality_scores'], 'electricity'), Colors.orange),
+//                         _buildQualityIndicator("البيئة والعزل", _getSpecificScore(workspace['quality_scores'], 'environment'), Colors.green),
+//                       ],
+//                     ),
+//                   ),
+//                   const SizedBox(height: 12),
+//                   _buildDetailStrip(workspace['electricity_details'] ?? "لا توجد تفاصيل إضافية للكهرباء حالياً", Icons.bolt),
+//                   const SizedBox(height: 10),
+//                   _buildDetailStrip(workspace['internet_details'] ?? "تفاصيل شبكة الاتصال متوفرة بالمكان", Icons.wifi, isOrange: true),
+//                   const SizedBox(height: 25),
+
+//                   // 6. شبكة المرافق
+//                   _buildSectionTitle("الخدمات والمرافق المتاحة", Icons.grid_view),
+//                   const SizedBox(height: 12),
+//                   GridView.count(
+//                     shrinkWrap: true,
+//                     physics: const NeverScrollableScrollPhysics(),
+//                     crossAxisCount: 2,
+//                     childAspectRatio: 2.2,
+//                     mainAxisSpacing: 10,
+//                     crossAxisSpacing: 10,
+//                     children: [
+//                       _buildServiceCard("دورات مياه", Icons.wc, isUnavailable: !servicesList.contains('wc')),
+//                       _buildServiceCard("طعام ومشروبات", Icons.local_cafe, isUnavailable: !servicesList.contains('drinks') && !servicesList.contains('food') && !servicesList.contains('cafe')),
+//                       _buildServiceCard("دراسة وهدوء", Icons.person, isUnavailable: false),
+//                       _buildServiceCard("جلسات مجموعات", Icons.group, isUnavailable: false),
+//                       _buildServiceCard("طباعة وأوراق", Icons.print, isUnavailable: !servicesList.contains('print')),
+//                       _buildServiceCard("قريب من خط السير", Icons.directions_bus, isUnavailable: !servicesList.contains('transport')),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 25),
+
+//                   // 7. جدول الوصول
+//                   _buildSectionTitle("الوقت وتفاصيل الوصول", Icons.access_time),
+//                   const SizedBox(height: 12),
+//                   Container(
+//                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+//                     child: Column(
+//                       children: [
+//                         _buildTableCell("أوقات العمل اليومية", workspace['working_hours'] ?? "غير مححدد"),
+//                         _buildTableCell("أقرب معلم مميز للمكان", workspace['nearest_landmark'] ?? "غير محدد"),
+//                         _buildTableCell("طبيعة المكان الجغرافية", workspace['district'] ?? "غير محدد"),
+//                         _buildTableCell("حالة التحقق والوصول", "مساحة عمل موثقة", isVerified: true),
+//                       ],
+//                     ),
+//                   ),
+//                   const SizedBox(height: 25),
+
+//                   // 8. التواصل عبر الهاتف / واتساب
+//                   _buildSectionTitle("تواصل سريع مع الإدارة", Icons.call),
+//                   const SizedBox(height: 12),
+//                   if (workspace['phone'] != null && workspace['phone'].toString().isNotEmpty)
+//                     GestureDetector(
+//                       onTap: () async {
+//                         final Uri url = Uri.parse("https://wa.me/${workspace['phone']}");
+//                         if (await canLaunchUrl(url)) await launchUrl(url);
+//                       },
+//                       child: Container(
+//                         padding: const EdgeInsets.symmetric(vertical: 15),
+//                         decoration: BoxDecoration(
+//                           color: Colors.white,
+//                           borderRadius: BorderRadius.circular(20),
+//                           boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6)],
+//                         ),
+//                         child: Row(
+//                           mainAxisAlignment: MainAxisAlignment.center,
+//                           children: [
+//                             Text(
+//                               workspace['phone'].toString(),
+//                               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87, fontFamily: 'Cairo'),
+//                             ),
+//                             const SizedBox(width: 12),
+//                             const Icon(Icons.chat, color: Colors.green, size: 28),
+//                           ],
+//                         ),
+//                       ),
+//                     ),
+//                   const SizedBox(height: 25),
+
+//                   // 9. أزرار الموقع والتقييمات
+//                   Row(
+//                     children: [
+//                       // زر الموقع
+//                       if (workspace['location_url'] != null && workspace['location_url'].toString().isNotEmpty)
+//                         Expanded(
+//                           child: ElevatedButton.icon(
+//                             style: ElevatedButton.styleFrom(
+//                               backgroundColor: const Color(0xFF386A1B),
+//                               minimumSize: const Size(double.infinity, 55),
+//                               shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+//                             ),
+//                             icon: const Icon(Icons.location_on, color: Colors.white),
+//                             label: const Text("الموقع", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+//                             onPressed: () async {
+//                               final Uri url = Uri.parse(workspace['location_url'].toString());
+//                               if (await canLaunchUrl(url)) await launchUrl(url);
+//                             },
+//                           ),
+//                         ),
+//                       const SizedBox(width: 10),
+//                       // زر التقييمات
+//                       Expanded(
+//                         child: ElevatedButton(
+//                           style: ElevatedButton.styleFrom(
+//                             backgroundColor: Colors.white,
+//                             minimumSize: const Size(double.infinity, 55),
+//                             shape: RoundedRectangleBorder(
+//                               borderRadius: BorderRadius.circular(30),
+//                               side: const BorderSide(color: Color(0xFF386A1B), width: 1.5),
+//                             ),
+//                           ),
+//                           onPressed: () {
+//                             Navigator.push(
+//                               context,
+//                               MaterialPageRoute(
+//                                 builder: (_) => RatingsScreen(
+//                                   cafeId: workspace['id'] ?? 'unknown',
+//                                   cafeName: workspace['name'] ?? 'مساحة عمل',
+//                                 ),
+//                               ),
+//                             );
+//                           },
+//                           child: const Text("التقييمات والتعليقات", style: TextStyle(color: Color(0xFF386A1B), fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   const SizedBox(height: 40),
+//                 ],
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+
+//   Widget _buildSectionTitle(String title, IconData icon) {
+//     return Row(
+//       mainAxisAlignment: MainAxisAlignment.end,
+//       children: [
+//         Text(title, style: const TextStyle(fontSize: 18, color: Color(0xFF386A1B), fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+//         const SizedBox(width: 8),
+//         Icon(icon, color: const Color(0xFF386A1B), size: 20),
+//       ],
+//     );
+//   }
+
+//   Widget _buildFilterBadge(String text, IconData icon, Color bgColor) {
+//     return Container(
+//       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+//       decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(15)),
+//       child: Row(
+//         mainAxisSize: MainAxisSize.min,
+//         children: [
+//           Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87, fontFamily: 'Cairo')),
+//           const SizedBox(width: 5),
+//           Icon(icon, size: 14, color: Colors.black54),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildPriceCard(String duration, String price, String label, {bool isFullWidth = false}) {
+//     return Container(
+//       width: isFullWidth ? double.infinity : null,
+//       padding: const EdgeInsets.all(14),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(18),
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           Text(price, style: const TextStyle(color: Color(0xFFC0392B), fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+//           Column(
+//             crossAxisAlignment: CrossAxisAlignment.end,
+//             children: [
+//               Text(duration, style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+//               if (label.isNotEmpty) Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11, fontFamily: 'Cairo')),
+//             ],
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildQualityIndicator(String title, double score, Color color) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(vertical: 6),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.end,
+//         children: [
+//           Text("${score.toStringAsFixed(0)}/5", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+//           const SizedBox(width: 10),
+//           Expanded(
+//             child: ClipRRect(
+//               borderRadius: BorderRadius.circular(10),
+//               child: LinearProgressIndicator(
+//                 value: score / 5,
+//                 backgroundColor: Colors.grey,
+//                 valueColor: AlwaysStoppedAnimation<Color>(color),
+//                 minHeight: 8,
+//               ),
+//             ),
+//           ),
+//           const SizedBox(width: 15),
+//           SizedBox(
+//             width: 85,
+//             child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, fontFamily: 'Cairo'), textAlign: TextAlign.right),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildDetailStrip(String text, IconData icon, {bool isOrange = false}) {
+//     return Container(
+//       width: double.infinity,
+//       padding: const EdgeInsets.all(12),
+//       decoration: BoxDecoration(
+//         color: isOrange ? const Color(0xFFFEF3C7) : const Color(0xFFE8F5E9),
+//         borderRadius: BorderRadius.circular(15),
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.end,
+//         children: [
+//           Expanded(
+//             child: Text(
+//               text,
+//               style: TextStyle(color: isOrange ? const Color(0xFFB45309) : const Color(0xFF2E7D32), fontSize: 13, fontWeight: FontWeight.w500, fontFamily: 'Cairo'),
+//               textAlign: TextAlign.right,
+//             ),
+//           ),
+//           const SizedBox(width: 10),
+//           Icon(icon, color: isOrange ? const Color(0xFFB45309) : const Color(0xFF2E7D32), size: 18),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildServiceCard(String title, IconData icon, {bool isUnavailable = false}) {
+//     return Container(
+//       padding: const EdgeInsets.symmetric(horizontal: 12),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(15),
+//       ),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.end,
+//         children: [
+//           Text(
+//             title,
+//             style: TextStyle(
+//                 fontSize: 13,
+//                 fontWeight: FontWeight.bold,
+//                 color: isUnavailable ? Colors.grey : Colors.black87,
+//                 decoration: isUnavailable ? TextDecoration.lineThrough : null,
+//                 fontFamily: 'Cairo'
+//             ),
+//           ),
+//           const SizedBox(width: 10),
+//           Icon(icon, color: isUnavailable ? Colors.grey : const Color(0xFF386A1B), size: 20),
+//         ],
+//       ),
+//     );
+//   }
+
+//   Widget _buildTableCell(String label, String value, {bool isVerified = false}) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           Row(
+//             children: [
+//               if (isVerified) const Icon(Icons.check, color: Colors.green, size: 18),
+//               const SizedBox(width: 4),
+//               Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87, fontFamily: 'Cairo')),
+//             ],
+//           ),
+//           Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500, fontFamily: 'Cairo')),
+//         ],
+//       ),
+//     );
+//   }
+// }
+
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:studyspot/favorite/favorites_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 // استيراد صفحة التقييمات
 import 'ratings_screen.dart';
 
 class workspace_details_page extends StatelessWidget {
   final Map<String, dynamic> workspace;
+  static final FavoritesService _favoritesService = FavoritesService();
 
-  const workspace_details_page({
-    super.key,
-    required this.workspace,
-  });
+  const workspace_details_page({super.key, required this.workspace});
+
+  String get _workspaceId =>
+      (workspace['workspaceId'] ?? workspace['id'] ?? '').toString();
 
   // ✨ دالة ذكية لإصلاح روابط ImgBB العادية وتحويلها لروابط مباشرة تلقائياً هنا أيضاً
   String _getCleanImageUrl(String url) {
@@ -54,7 +657,8 @@ class workspace_details_page extends StatelessWidget {
       final pairs = qualityScores.split('|');
       for (var pair in pairs) {
         final parts = pair.split(':');
-        if (parts.length == 2 && parts[0].trim().toLowerCase() == key.toLowerCase()) {
+        if (parts.length == 2 &&
+            parts[0].trim().toLowerCase() == key.toLowerCase()) {
           return double.tryParse(parts[1]) ?? 3.0;
         }
       }
@@ -66,7 +670,11 @@ class workspace_details_page extends StatelessWidget {
   List<Map<String, String>> _parsePricingPlans(String? pricingPlansStr) {
     if (pricingPlansStr == null || pricingPlansStr.isEmpty) {
       return [
-        {"title": "السعر", "price": "غير محدد", "sub": "يرجى التواصل لمعرفة السعر"}
+        {
+          "title": "السعر",
+          "price": "غير محدد",
+          "sub": "يرجى التواصل لمعرفة السعر",
+        },
       ];
     }
     List<Map<String, String>> plans = [];
@@ -78,7 +686,9 @@ class workspace_details_page extends StatelessWidget {
           plans.add({
             "title": kv[0].trim(),
             "price": kv[1].trim(),
-            "sub": kv[0].trim().contains("شهر") ? "دخول غير محدود طوال الشهر" : "سعر اقتصادي"
+            "sub": kv[0].trim().contains("شهر")
+                ? "دخول غير محدود طوال الشهر"
+                : "سعر اقتصادي",
           });
         }
       }
@@ -94,10 +704,17 @@ class workspace_details_page extends StatelessWidget {
   Widget build(BuildContext context) {
     double rating = _getAverageRating(workspace['quality_scores']);
 
-    List<String> servicesList = (workspace['filters_csv'] ?? '').toString().split(',');
-    servicesList = servicesList.map((s) => s.trim().toLowerCase()).where((s) => s.isNotEmpty).toList();
+    List<String> servicesList = (workspace['filters_csv'] ?? '')
+        .toString()
+        .split(',');
+    servicesList = servicesList
+        .map((s) => s.trim().toLowerCase())
+        .where((s) => s.isNotEmpty)
+        .toList();
 
-    List<Map<String, String>> pricingPlans = _parsePricingPlans(workspace['pricing_plans']);
+    List<Map<String, String>> pricingPlans = _parsePricingPlans(
+      workspace['pricing_plans'],
+    );
 
     // تنظيف الرابط القادم من الفايرستور قبل عرضه
     final cleanUrl = _getCleanImageUrl(workspace['image_url'] ?? '');
@@ -120,24 +737,39 @@ class workspace_details_page extends StatelessWidget {
                     ),
                     child: cleanUrl.isEmpty || !cleanUrl.startsWith('http')
                         ? Container(
-                      color: Colors.grey[300],
-                      child: const Icon(Icons.image_not_supported, size: 60, color: Colors.grey),
-                    )
+                            color: Colors.grey[300],
+                            child: const Icon(
+                              Icons.image_not_supported,
+                              size: 60,
+                              color: Colors.grey,
+                            ),
+                          )
                         : Image.network(
-                      cleanUrl,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) => Container(
-                        color: Colors.grey[300],
-                        child: const Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.broken_image, size: 60, color: Colors.grey),
-                            SizedBox(height: 8),
-                            Text("رابط الصورة تالف أو غير مدعوم", style: TextStyle(color: Colors.grey, fontFamily: 'Cairo')),
-                          ],
-                        ),
-                      ),
-                    ),
+                            cleanUrl,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) =>
+                                Container(
+                                  color: Colors.grey[300],
+                                  child: const Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Icon(
+                                        Icons.broken_image,
+                                        size: 60,
+                                        color: Colors.grey,
+                                      ),
+                                      SizedBox(height: 8),
+                                      Text(
+                                        "رابط الصورة تالف أو غير مدعوم",
+                                        style: TextStyle(
+                                          color: Colors.grey,
+                                          fontFamily: 'Cairo',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                          ),
                   ),
                 ),
                 Container(
@@ -150,7 +782,10 @@ class workspace_details_page extends StatelessWidget {
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.black.withOpacity(0.1), Colors.black.withOpacity(0.65)],
+                      colors: [
+                        Colors.black.withOpacity(0.1),
+                        Colors.black.withOpacity(0.65),
+                      ],
                     ),
                   ),
                 ),
@@ -158,21 +793,31 @@ class workspace_details_page extends StatelessWidget {
                   top: 40,
                   left: 20,
                   child: IconButton(
-                    icon: const Icon(Icons.arrow_back_ios, color: Colors.white, size: 28),
+                    icon: const Icon(
+                      Icons.arrow_back_ios,
+                      color: Colors.white,
+                      size: 28,
+                    ),
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                const Positioned(
+                Positioned(
                   top: 40,
                   right: 20,
-                  child: Icon(Icons.favorite_border, color: Colors.white, size: 30),
+                  child: _DetailsFavoriteButton(
+                    workspaceId: _workspaceId,
+                    favoritesService: _favoritesService,
+                  ),
                 ),
                 Positioned(
                   top: 45,
                   left: 100,
                   right: 100,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFD97706),
                       borderRadius: BorderRadius.circular(20),
@@ -184,10 +829,18 @@ class workspace_details_page extends StatelessWidget {
                         const Icon(Icons.bolt, color: Colors.white, size: 16),
                         const SizedBox(width: 4),
                         Text(
-                          workspace['electricity_details'] != null && workspace['electricity_details'].toString().contains("24")
+                          workspace['electricity_details'] != null &&
+                                  workspace['electricity_details']
+                                      .toString()
+                                      .contains("24")
                               ? "كهرباء متوفرة دائمًا"
                               : "كهرباء متوفرة",
-                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13, fontFamily: 'Cairo'),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 13,
+                            fontFamily: 'Cairo',
+                          ),
                         ),
                       ],
                     ),
@@ -202,13 +855,22 @@ class workspace_details_page extends StatelessWidget {
                     children: [
                       Text(
                         workspace['name'] ?? 'مساحة عمل',
-                        style: const TextStyle(color: Colors.white, fontSize: 30, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 30,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'Cairo',
+                        ),
                         textAlign: TextAlign.right,
                       ),
                       const SizedBox(height: 4),
                       Text(
                         "${workspace['city'] ?? ''} - ${workspace['district'] ?? ''}",
-                        style: const TextStyle(color: Colors.white, fontSize: 16, fontFamily: 'Cairo'),
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontFamily: 'Cairo',
+                        ),
                         textAlign: TextAlign.right,
                       ),
                     ],
@@ -226,27 +888,44 @@ class workspace_details_page extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
-                          border: Border.all(color: const Color(0xFFD97706), width: 1.5),
+                          border: Border.all(
+                            color: const Color(0xFFD97706),
+                            width: 1.5,
+                          ),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           workspace['working_hours'] ?? 'غير محدد',
-                          style: const TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.bold, fontSize: 14, fontFamily: 'Cairo'),
+                          style: const TextStyle(
+                            color: Color(0xFFD97706),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14,
+                            fontFamily: 'Cairo',
+                          ),
                         ),
                       ),
                       Row(
                         children: [
                           Text(
                             rating.toStringAsFixed(1),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Cairo',
+                            ),
                           ),
                           const SizedBox(width: 5),
                           Row(
                             children: List.generate(5, (index) {
                               return Icon(
-                                index < rating.round() ? Icons.star : Icons.star_border,
+                                index < rating.round()
+                                    ? Icons.star
+                                    : Icons.star_border,
                                 color: Colors.orange,
                                 size: 22,
                               );
@@ -264,14 +943,37 @@ class workspace_details_page extends StatelessWidget {
                     runSpacing: 10,
                     alignment: WrapAlignment.end,
                     children: [
-                      if (servicesList.contains('drinks') || servicesList.contains('food') || servicesList.contains('cafe'))
-                        _buildFilterBadge("طعام ومشروبات", Icons.fastfood, const Color(0xFFD4E6C1)),
+                      if (servicesList.contains('drinks') ||
+                          servicesList.contains('food') ||
+                          servicesList.contains('cafe'))
+                        _buildFilterBadge(
+                          "طعام ومشروبات",
+                          Icons.fastfood,
+                          const Color(0xFFD4E6C1),
+                        ),
                       if (servicesList.contains('wc'))
-                        _buildFilterBadge("دورات مياه", Icons.wc, const Color(0xFFD4E6C1)),
-                      _buildFilterBadge("مقاعد مريحة", Icons.chair, const Color(0xFFD4E6C1)),
-                      _buildFilterBadge("بيئة عمل", Icons.laptop, const Color(0xFFBFE3E8)),
-                      if (servicesList.contains('internet') || servicesList.contains('wifi'))
-                        _buildFilterBadge("واي فاي", Icons.wifi, const Color(0xFFD4E6C1)),
+                        _buildFilterBadge(
+                          "دورات مياه",
+                          Icons.wc,
+                          const Color(0xFFD4E6C1),
+                        ),
+                      _buildFilterBadge(
+                        "مقاعد مريحة",
+                        Icons.chair,
+                        const Color(0xFFD4E6C1),
+                      ),
+                      _buildFilterBadge(
+                        "بيئة عمل",
+                        Icons.laptop,
+                        const Color(0xFFBFE3E8),
+                      ),
+                      if (servicesList.contains('internet') ||
+                          servicesList.contains('wifi'))
+                        _buildFilterBadge(
+                          "واي فاي",
+                          Icons.wifi,
+                          const Color(0xFFD4E6C1),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 25),
@@ -287,10 +989,10 @@ class workspace_details_page extends StatelessWidget {
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 10),
                         child: _buildPriceCard(
-                            pricingPlans[index]['title']!,
-                            pricingPlans[index]['price']!,
-                            pricingPlans[index]['sub']!,
-                            isFullWidth: true
+                          pricingPlans[index]['title']!,
+                          pricingPlans[index]['price']!,
+                          pricingPlans[index]['sub']!,
+                          isFullWidth: true,
                         ),
                       );
                     },
@@ -298,7 +1000,10 @@ class workspace_details_page extends StatelessWidget {
                   const SizedBox(height: 25),
 
                   // 5. مؤشرات الجودة
-                  _buildSectionTitle("مؤشرات الجودة الحاليّة", Icons.analytics_outlined),
+                  _buildSectionTitle(
+                    "مؤشرات الجودة الحاليّة",
+                    Icons.analytics_outlined,
+                  ),
                   const SizedBox(height: 12),
                   Container(
                     padding: const EdgeInsets.all(15),
@@ -308,21 +1013,61 @@ class workspace_details_page extends StatelessWidget {
                     ),
                     child: Column(
                       children: [
-                        _buildQualityIndicator("الإنترنت", _getSpecificScore(workspace['quality_scores'], 'internet'), Colors.blue),
-                        _buildQualityIndicator("الإستقرار", _getSpecificScore(workspace['quality_scores'], 'stability'), Colors.blueAccent),
-                        _buildQualityIndicator("الكهرباء", _getSpecificScore(workspace['quality_scores'], 'electricity'), Colors.orange),
-                        _buildQualityIndicator("البيئة والعزل", _getSpecificScore(workspace['quality_scores'], 'environment'), Colors.green),
+                        _buildQualityIndicator(
+                          "الإنترنت",
+                          _getSpecificScore(
+                            workspace['quality_scores'],
+                            'internet',
+                          ),
+                          Colors.blue,
+                        ),
+                        _buildQualityIndicator(
+                          "الإستقرار",
+                          _getSpecificScore(
+                            workspace['quality_scores'],
+                            'stability',
+                          ),
+                          Colors.blueAccent,
+                        ),
+                        _buildQualityIndicator(
+                          "الكهرباء",
+                          _getSpecificScore(
+                            workspace['quality_scores'],
+                            'electricity',
+                          ),
+                          Colors.orange,
+                        ),
+                        _buildQualityIndicator(
+                          "البيئة والعزل",
+                          _getSpecificScore(
+                            workspace['quality_scores'],
+                            'environment',
+                          ),
+                          Colors.green,
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 12),
-                  _buildDetailStrip(workspace['electricity_details'] ?? "لا توجد تفاصيل إضافية للكهرباء حالياً", Icons.bolt),
+                  _buildDetailStrip(
+                    workspace['electricity_details'] ??
+                        "لا توجد تفاصيل إضافية للكهرباء حالياً",
+                    Icons.bolt,
+                  ),
                   const SizedBox(height: 10),
-                  _buildDetailStrip(workspace['internet_details'] ?? "تفاصيل شبكة الاتصال متوفرة بالمكان", Icons.wifi, isOrange: true),
+                  _buildDetailStrip(
+                    workspace['internet_details'] ??
+                        "تفاصيل شبكة الاتصال متوفرة بالمكان",
+                    Icons.wifi,
+                    isOrange: true,
+                  ),
                   const SizedBox(height: 25),
 
                   // 6. شبكة المرافق
-                  _buildSectionTitle("الخدمات والمرافق المتاحة", Icons.grid_view),
+                  _buildSectionTitle(
+                    "الخدمات والمرافق المتاحة",
+                    Icons.grid_view,
+                  ),
                   const SizedBox(height: 12),
                   GridView.count(
                     shrinkWrap: true,
@@ -332,12 +1077,39 @@ class workspace_details_page extends StatelessWidget {
                     mainAxisSpacing: 10,
                     crossAxisSpacing: 10,
                     children: [
-                      _buildServiceCard("دورات مياه", Icons.wc, isUnavailable: !servicesList.contains('wc')),
-                      _buildServiceCard("طعام ومشروبات", Icons.local_cafe, isUnavailable: !servicesList.contains('drinks') && !servicesList.contains('food') && !servicesList.contains('cafe')),
-                      _buildServiceCard("دراسة وهدوء", Icons.person, isUnavailable: false),
-                      _buildServiceCard("جلسات مجموعات", Icons.group, isUnavailable: false),
-                      _buildServiceCard("طباعة وأوراق", Icons.print, isUnavailable: !servicesList.contains('print')),
-                      _buildServiceCard("قريب من خط السير", Icons.directions_bus, isUnavailable: !servicesList.contains('transport')),
+                      _buildServiceCard(
+                        "دورات مياه",
+                        Icons.wc,
+                        isUnavailable: !servicesList.contains('wc'),
+                      ),
+                      _buildServiceCard(
+                        "طعام ومشروبات",
+                        Icons.local_cafe,
+                        isUnavailable:
+                            !servicesList.contains('drinks') &&
+                            !servicesList.contains('food') &&
+                            !servicesList.contains('cafe'),
+                      ),
+                      _buildServiceCard(
+                        "دراسة وهدوء",
+                        Icons.person,
+                        isUnavailable: false,
+                      ),
+                      _buildServiceCard(
+                        "جلسات مجموعات",
+                        Icons.group,
+                        isUnavailable: false,
+                      ),
+                      _buildServiceCard(
+                        "طباعة وأوراق",
+                        Icons.print,
+                        isUnavailable: !servicesList.contains('print'),
+                      ),
+                      _buildServiceCard(
+                        "قريب من خط السير",
+                        Icons.directions_bus,
+                        isUnavailable: !servicesList.contains('transport'),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 25),
@@ -346,13 +1118,29 @@ class workspace_details_page extends StatelessWidget {
                   _buildSectionTitle("الوقت وتفاصيل الوصول", Icons.access_time),
                   const SizedBox(height: 12),
                   Container(
-                    decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(20),
+                    ),
                     child: Column(
                       children: [
-                        _buildTableCell("أوقات العمل اليومية", workspace['working_hours'] ?? "غير مححدد"),
-                        _buildTableCell("أقرب معلم مميز للمكان", workspace['nearest_landmark'] ?? "غير محدد"),
-                        _buildTableCell("طبيعة المكان الجغرافية", workspace['district'] ?? "غير محدد"),
-                        _buildTableCell("حالة التحقق والوصول", "مساحة عمل موثقة", isVerified: true),
+                        _buildTableCell(
+                          "أوقات العمل اليومية",
+                          workspace['working_hours'] ?? "غير مححدد",
+                        ),
+                        _buildTableCell(
+                          "أقرب معلم مميز للمكان",
+                          workspace['nearest_landmark'] ?? "غير محدد",
+                        ),
+                        _buildTableCell(
+                          "طبيعة المكان الجغرافية",
+                          workspace['district'] ?? "غير محدد",
+                        ),
+                        _buildTableCell(
+                          "حالة التحقق والوصول",
+                          "مساحة عمل موثقة",
+                          isVerified: true,
+                        ),
                       ],
                     ),
                   ),
@@ -361,10 +1149,13 @@ class workspace_details_page extends StatelessWidget {
                   // 8. التواصل عبر الهاتف / واتساب
                   _buildSectionTitle("تواصل سريع مع الإدارة", Icons.call),
                   const SizedBox(height: 12),
-                  if (workspace['phone'] != null && workspace['phone'].toString().isNotEmpty)
+                  if (workspace['phone'] != null &&
+                      workspace['phone'].toString().isNotEmpty)
                     GestureDetector(
                       onTap: () async {
-                        final Uri url = Uri.parse("https://wa.me/${workspace['phone']}");
+                        final Uri url = Uri.parse(
+                          "https://wa.me/${workspace['phone']}",
+                        );
                         if (await canLaunchUrl(url)) await launchUrl(url);
                       },
                       child: Container(
@@ -372,17 +1163,31 @@ class workspace_details_page extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(20),
-                          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 6)],
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.02),
+                              blurRadius: 6,
+                            ),
+                          ],
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Text(
                               workspace['phone'].toString(),
-                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black87, fontFamily: 'Cairo'),
+                              style: const TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.black87,
+                                fontFamily: 'Cairo',
+                              ),
                             ),
                             const SizedBox(width: 12),
-                            const Icon(Icons.chat, color: Colors.green, size: 28),
+                            const Icon(
+                              Icons.chat,
+                              color: Colors.green,
+                              size: 28,
+                            ),
                           ],
                         ),
                       ),
@@ -393,18 +1198,34 @@ class workspace_details_page extends StatelessWidget {
                   Row(
                     children: [
                       // زر الموقع
-                      if (workspace['location_url'] != null && workspace['location_url'].toString().isNotEmpty)
+                      if (workspace['location_url'] != null &&
+                          workspace['location_url'].toString().isNotEmpty)
                         Expanded(
                           child: ElevatedButton.icon(
                             style: ElevatedButton.styleFrom(
                               backgroundColor: const Color(0xFF386A1B),
                               minimumSize: const Size(double.infinity, 55),
-                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(30),
+                              ),
                             ),
-                            icon: const Icon(Icons.location_on, color: Colors.white),
-                            label: const Text("الموقع", style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                            icon: const Icon(
+                              Icons.location_on,
+                              color: Colors.white,
+                            ),
+                            label: const Text(
+                              "الموقع",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                                fontFamily: 'Cairo',
+                              ),
+                            ),
                             onPressed: () async {
-                              final Uri url = Uri.parse(workspace['location_url'].toString());
+                              final Uri url = Uri.parse(
+                                workspace['location_url'].toString(),
+                              );
                               if (await canLaunchUrl(url)) await launchUrl(url);
                             },
                           ),
@@ -418,7 +1239,10 @@ class workspace_details_page extends StatelessWidget {
                             minimumSize: const Size(double.infinity, 55),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(30),
-                              side: const BorderSide(color: Color(0xFF386A1B), width: 1.5),
+                              side: const BorderSide(
+                                color: Color(0xFF386A1B),
+                                width: 1.5,
+                              ),
                             ),
                           ),
                           onPressed: () {
@@ -432,7 +1256,15 @@ class workspace_details_page extends StatelessWidget {
                               ),
                             );
                           },
-                          child: const Text("التقييمات والتعليقات", style: TextStyle(color: Color(0xFF386A1B), fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+                          child: const Text(
+                            "التقييمات والتعليقات",
+                            style: TextStyle(
+                              color: Color(0xFF386A1B),
+                              fontSize: 16,
+                              fontWeight: FontWeight.bold,
+                              fontFamily: 'Cairo',
+                            ),
+                          ),
                         ),
                       ),
                     ],
@@ -451,7 +1283,15 @@ class workspace_details_page extends StatelessWidget {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(title, style: const TextStyle(fontSize: 18, color: Color(0xFF386A1B), fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+        Text(
+          title,
+          style: const TextStyle(
+            fontSize: 18,
+            color: Color(0xFF386A1B),
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Cairo',
+          ),
+        ),
         const SizedBox(width: 8),
         Icon(icon, color: const Color(0xFF386A1B), size: 20),
       ],
@@ -461,11 +1301,22 @@ class workspace_details_page extends StatelessWidget {
   Widget _buildFilterBadge(String text, IconData icon, Color bgColor) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(15)),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(15),
+      ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(text, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Colors.black87, fontFamily: 'Cairo')),
+          Text(
+            text,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.black87,
+              fontFamily: 'Cairo',
+            ),
+          ),
           const SizedBox(width: 5),
           Icon(icon, size: 14, color: Colors.black54),
         ],
@@ -473,7 +1324,12 @@ class workspace_details_page extends StatelessWidget {
     );
   }
 
-  Widget _buildPriceCard(String duration, String price, String label, {bool isFullWidth = false}) {
+  Widget _buildPriceCard(
+    String duration,
+    String price,
+    String label, {
+    bool isFullWidth = false,
+  }) {
     return Container(
       width: isFullWidth ? double.infinity : null,
       padding: const EdgeInsets.all(14),
@@ -484,12 +1340,36 @@ class workspace_details_page extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(price, style: const TextStyle(color: Color(0xFFC0392B), fontSize: 20, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+          Text(
+            price,
+            style: const TextStyle(
+              color: Color(0xFFC0392B),
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Cairo',
+            ),
+          ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
-              Text(duration, style: const TextStyle(color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
-              if (label.isNotEmpty) Text(label, style: const TextStyle(color: Colors.grey, fontSize: 11, fontFamily: 'Cairo')),
+              Text(
+                duration,
+                style: const TextStyle(
+                  color: Colors.black87,
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  fontFamily: 'Cairo',
+                ),
+              ),
+              if (label.isNotEmpty)
+                Text(
+                  label,
+                  style: const TextStyle(
+                    color: Colors.grey,
+                    fontSize: 11,
+                    fontFamily: 'Cairo',
+                  ),
+                ),
             ],
           ),
         ],
@@ -503,7 +1383,14 @@ class workspace_details_page extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Text("${score.toStringAsFixed(0)}/5", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
+          Text(
+            "${score.toStringAsFixed(0)}/5",
+            style: const TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Cairo',
+            ),
+          ),
           const SizedBox(width: 10),
           Expanded(
             child: ClipRRect(
@@ -519,14 +1406,26 @@ class workspace_details_page extends StatelessWidget {
           const SizedBox(width: 15),
           SizedBox(
             width: 85,
-            child: Text(title, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, fontFamily: 'Cairo'), textAlign: TextAlign.right),
+            child: Text(
+              title,
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Cairo',
+              ),
+              textAlign: TextAlign.right,
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildDetailStrip(String text, IconData icon, {bool isOrange = false}) {
+  Widget _buildDetailStrip(
+    String text,
+    IconData icon, {
+    bool isOrange = false,
+  }) {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(12),
@@ -540,18 +1439,33 @@ class workspace_details_page extends StatelessWidget {
           Expanded(
             child: Text(
               text,
-              style: TextStyle(color: isOrange ? const Color(0xFFB45309) : const Color(0xFF2E7D32), fontSize: 13, fontWeight: FontWeight.w500, fontFamily: 'Cairo'),
+              style: TextStyle(
+                color: isOrange
+                    ? const Color(0xFFB45309)
+                    : const Color(0xFF2E7D32),
+                fontSize: 13,
+                fontWeight: FontWeight.w500,
+                fontFamily: 'Cairo',
+              ),
               textAlign: TextAlign.right,
             ),
           ),
           const SizedBox(width: 10),
-          Icon(icon, color: isOrange ? const Color(0xFFB45309) : const Color(0xFF2E7D32), size: 18),
+          Icon(
+            icon,
+            color: isOrange ? const Color(0xFFB45309) : const Color(0xFF2E7D32),
+            size: 18,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildServiceCard(String title, IconData icon, {bool isUnavailable = false}) {
+  Widget _buildServiceCard(
+    String title,
+    IconData icon, {
+    bool isUnavailable = false,
+  }) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
@@ -564,21 +1478,29 @@ class workspace_details_page extends StatelessWidget {
           Text(
             title,
             style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.bold,
-                color: isUnavailable ? Colors.grey : Colors.black87,
-                decoration: isUnavailable ? TextDecoration.lineThrough : null,
-                fontFamily: 'Cairo'
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+              color: isUnavailable ? Colors.grey : Colors.black87,
+              decoration: isUnavailable ? TextDecoration.lineThrough : null,
+              fontFamily: 'Cairo',
             ),
           ),
           const SizedBox(width: 10),
-          Icon(icon, color: isUnavailable ? Colors.grey : const Color(0xFF386A1B), size: 20),
+          Icon(
+            icon,
+            color: isUnavailable ? Colors.grey : const Color(0xFF386A1B),
+            size: 20,
+          ),
         ],
       ),
     );
   }
 
-  Widget _buildTableCell(String label, String value, {bool isVerified = false}) {
+  Widget _buildTableCell(
+    String label,
+    String value, {
+    bool isVerified = false,
+  }) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Row(
@@ -586,13 +1508,114 @@ class workspace_details_page extends StatelessWidget {
         children: [
           Row(
             children: [
-              if (isVerified) const Icon(Icons.check, color: Colors.green, size: 18),
+              if (isVerified)
+                const Icon(Icons.check, color: Colors.green, size: 18),
               const SizedBox(width: 4),
-              Text(value, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.black87, fontFamily: 'Cairo')),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.black87,
+                  fontFamily: 'Cairo',
+                ),
+              ),
             ],
           ),
-          Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500, fontFamily: 'Cairo')),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 14,
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+              fontFamily: 'Cairo',
+            ),
+          ),
         ],
+      ),
+    );
+  }
+}
+
+class _DetailsFavoriteButton extends StatelessWidget {
+  const _DetailsFavoriteButton({
+    required this.workspaceId,
+    required this.favoritesService,
+  });
+
+  final String workspaceId;
+  final FavoritesService favoritesService;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: favoritesService.authStateChanges,
+      builder: (context, authSnapshot) {
+        final user = authSnapshot.data;
+        if (user == null) {
+          return _HeaderFavoriteIcon(
+            isFavorite: false,
+            onPressed: () =>
+                _showMessage(context, 'سجّل الدخول أولاً لحفظ المفضلة'),
+          );
+        }
+
+        return StreamBuilder<bool>(
+          stream: favoritesService.isFavoriteForUser(user.uid, workspaceId),
+          builder: (context, favoriteSnapshot) {
+            final isFavorite = favoriteSnapshot.data ?? false;
+            return _HeaderFavoriteIcon(
+              isFavorite: isFavorite,
+              onPressed: () async {
+                if (workspaceId.isEmpty) {
+                  _showMessage(
+                    context,
+                    'تعذر حفظ المكان لأن معرف المساحة غير موجود',
+                  );
+                  return;
+                }
+
+                try {
+                  await favoritesService.toggleFavorite(
+                    workspaceId,
+                    isFavorite,
+                  );
+                } catch (_) {
+                  if (!context.mounted) return;
+                  _showMessage(context, 'تعذر تحديث المفضلة، حاول مرة أخرى');
+                }
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _HeaderFavoriteIcon extends StatelessWidget {
+  const _HeaderFavoriteIcon({
+    required this.isFavorite,
+    required this.onPressed,
+  });
+
+  final bool isFavorite;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(
+        isFavorite ? Icons.favorite : Icons.favorite_border,
+        color: isFavorite ? Colors.redAccent : Colors.white,
+        size: 30,
       ),
     );
   }
