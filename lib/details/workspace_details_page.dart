@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-// استيراد صفحة التقييمات
+//  استيراد صفحة التقييمات
 import 'ratings_screen.dart';
 
 class workspace_details_page extends StatelessWidget {

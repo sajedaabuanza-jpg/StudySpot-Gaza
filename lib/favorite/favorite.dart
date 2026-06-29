@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:studyspot/homePage.dart';
-import 'package:studyspot/add_workspace_screen.dart';
+import 'package:studyspot/details/add_workspace_screen.dart';
 
 class favorite extends StatelessWidget {
   const favorite({super.key});

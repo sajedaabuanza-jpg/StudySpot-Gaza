@@ -8,7 +8,19 @@ plugins {
 android {
     namespace = "com.example.studyspot"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    android {
+        namespace = "com.example.studyspot"
+        compileSdk = flutter.compileSdkVersion
+
+        // 👇 قم بتغيير هذا السطر وكتابة رقم الإصدار السليم يدوياً بين علامتي تنصيص
+        ndkVersion = "26.1.10909125"
+
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+        // ... باقي الكود دون تغيير
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
