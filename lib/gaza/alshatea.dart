@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // استيراد الفايرستور
+import 'package:studyspot/card/WorkspaceCard.dart';
+import 'package:studyspot/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
 
 class alshatea extends StatefulWidget {
   const alshatea({super.key});
@@ -8,8 +11,96 @@ class alshatea extends StatefulWidget {
 }
 
 class _alshateaState extends State<alshatea> {
+  // دالة مساعدة لحساب التقييم من الـ Firestore بشكل آمن (Null-Safe)
+  double _parseRating(String? qualityScores) {
+    if (qualityScores == null || qualityScores.isEmpty) return 5.0;
+    try {
+      final pairs = qualityScores.split('|');
+      double total = 0;
+      int count = 0;
+      for (var pair in pairs) {
+        final parts = pair.split(':');
+        if (parts.length == 2) {
+          final score = double.tryParse(parts[1].trim());
+          if (score != null) {
+            total += score;
+            count++;
+          }
+        }
+      }
+      return count > 0 ? (total / count) : 5.0;
+    } catch (e) {
+      return 5.0; // العودة بالتقييم الافتراضي في حال حدوث أي مشكلة في النص
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold();
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: const Color(0xFF386A1B),
+        title: const Text("الشاطئ", style: TextStyle(color: Colors.white, fontFamily: 'Cairo')),
+        centerTitle: true,
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
+      backgroundColor: Colors.white,
+      // استخدام StreamBuilder لجلب البيانات الحية والمباشرة من الفايرستور
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('workspaces')
+            .where('district', isEqualTo: 'الشاطئ') // 🎯 جلب مساحات منطقة الشاطئ فقط
+            .snapshots(),
+        builder: (context, snapshot) {
+          if (snapshot.hasError) {
+            return const Center(child: Text("حدث خطأ أثناء تحميل البيانات", style: TextStyle(fontFamily: 'Cairo')));
+          }
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          final docs = snapshot.data?.docs ?? [];
+          if (docs.isEmpty) {
+            return const Center(
+                child: Text(
+                    "لا توجد مساحات عمل متاحة حالياً في هذه المنطقة",
+                    style: TextStyle(fontFamily: 'Cairo', color: Colors.grey)
+                )
+            );
+          }
+
+          return ListView.builder(
+            itemCount: docs.length,
+            itemBuilder: (BuildContext context, int index) {
+              final data = docs[index].data() as Map<String, dynamic>;
+
+              final item = {
+                ...data,
+                'id' : docs[index].id,
+                'district': data['district'] ?? 'الشاطئ',
+              };
+
+              double calculatedRating = _parseRating(item['quality_scores']);
+
+              return WorkspaceCard(
+                title: item['name'] ?? 'بدون اسم',
+                location: "${item['city'] ?? ''} - ${item['district']}",
+                imagePath: item['image_url'] ?? '',
+                rating: calculatedRating,
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => workspace_details_page(
+                        workspace: item,
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }
