@@ -1,3 +1,4 @@
+import 'package:studyspot/filter_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:studyspot/al-westa/al-westa.dart';
@@ -118,6 +119,30 @@ class _cityState extends State<city> {
             child: Column(
               children: [
                 SizedBox(height: screenHeight * 0.10),
+                Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    child: SizedBox(
+                    width: double.infinity,
+                    height: 50,
+                     child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF386A1B),
+                        shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                        ),
+                      ),
+                    icon: const Icon(Icons.filter_alt, color: Colors.white),
+                    label: const Text(
+                    'بحث بالفلترة',
+                    style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+                    ),
+                     onPressed: () {
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => FilterPage()));
+                    },
+                  ),
+                ),
+                ),
+               const SizedBox(height: 15),
                 _buildStepper(1),
                 const SizedBox(height: 30),
                 const Text(
