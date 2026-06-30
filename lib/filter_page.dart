@@ -13,7 +13,11 @@ class _FilterPageState extends State<FilterPage> {
   String selectedQuickFilter = 'الأبرز';
   final List<String> quickFilters = ['الأبرز', 'واي فاي', 'كهرباء', 'مواصلات'];
 
+  // متحكم البحث النصي
+  final TextEditingController searchController = TextEditingController();
+
   // خريطة (Map) لحفظ حالة الخدمات والمرافق (هل هي مختارة أم لا)
+  // هذه الخدمات مطابقة تماماً لحقل filters_csv الموجود في Firebase
   final Map<String, bool> servicesStatus = {
     'كهرباء': false,
     'مشروبات': false,
@@ -46,34 +50,55 @@ class _FilterPageState extends State<FilterPage> {
   // متغير لمعرفة هل نحن في حالة تحميل أم لا
   bool isLoading = false;
 
-  // دالة الفلترة الرئيسية - تجيب البيانات من Firebase وتفلترها
+  // متغير لمعرفة هل تم الضغط على زر البحث من قبل (لإخفاء الرسائل في البداية)
+  bool hasSearched = false;
+
+  // دالة الفلترة الرئيسية - تجيب جميع الأماكن من كل المدن وتفلترها
   Future<void> fetchFilteredResults() async {
     setState(() {
       isLoading = true; // إظهار مؤشر التحميل
+      hasSearched = true;
     });
 
-    // جلب كل الأماكن من Firebase
+    // جلب كل الأماكن من كل المدن (بدون أي فلترة على مستوى السيرفر)
     final snapshot = await FirebaseFirestore.instance
         .collection('workspaces')
         .get();
 
-    // تحديد الفلاتر المختارة من المستخدم
+    // تحديد الفلاتر المختارة من المستخدم (الخدمات)
     final List<String> activeFilters = servicesStatus.entries
         .where((entry) => entry.value == true)
         .map((entry) => serviceToFilter[entry.key]!)
         .toList();
 
-    // تصفية النتائج محلياً بناءً على filters_csv
+    // نص البحث الذي كتبه المستخدم (بعد إزالة الفراغات الزائدة)
+    final String searchQuery = searchController.text.trim();
+
+    // تصفية النتائج محلياً بناءً على filters_csv ونص البحث
     final filtered = snapshot.docs.where((doc) {
       final data = doc.data();
+
+      // فلترة الخدمات (filters_csv)
       final String filtersCsv = data['filters_csv'] ?? '';
       final List<String> placeFilters = filtersCsv.split(',');
 
-      // إذا ما في فلاتر مختارة، أرجع كل الأماكن
-      if (activeFilters.isEmpty) return true;
+      final bool matchesFilters = activeFilters.isEmpty
+          ? true
+          : activeFilters.every((f) => placeFilters.contains(f));
 
-      // تحقق أن المكان يحتوي على كل الفلاتر المختارة
-      return activeFilters.every((f) => placeFilters.contains(f));
+      // فلترة نص البحث (الاسم أو المدينة أو المنطقة)
+      bool matchesSearch = true;
+      if (searchQuery.isNotEmpty) {
+        final String name = (data['name'] ?? '').toString();
+        final String city = (data['city'] ?? '').toString();
+        final String district = (data['district'] ?? '').toString();
+
+        matchesSearch = name.contains(searchQuery) ||
+            city.contains(searchQuery) ||
+            district.contains(searchQuery);
+      }
+
+      return matchesFilters && matchesSearch;
     }).map((doc) => doc.data()).toList();
 
     setState(() {
@@ -83,12 +108,18 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   @override
+  void dispose() {
+    searchController.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     // حساب عدد الخدمات المختارة حالياً لعرضها في زر النتائج
     int selectedCount = servicesStatus.values.where((element) => element == true).length;
 
     // اللون الأخضر الأساسي للتطبيق المستوحى من التصميم
-    const Color primaryGreen = Color(0xFF2A663B);
+    final Color primaryGreen = const Color(0xFF2A663B);
 
     return Scaffold(
       backgroundColor: const Color(0xFFF4F9F5), // خلفية الصفحة المائلة للأخضر الفاتح جداً
@@ -102,9 +133,9 @@ class _FilterPageState extends State<FilterPage> {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.only(top: 60, bottom: 25, left: 20, right: 20),
-                decoration: const BoxDecoration(
+                decoration: BoxDecoration(
                   color: primaryGreen,
-                  borderRadius: BorderRadius.only(
+                  borderRadius: const BorderRadius.only(
                     bottomLeft: Radius.circular(25),
                     bottomRight: Radius.circular(25),
                   ),
@@ -124,6 +155,8 @@ class _FilterPageState extends State<FilterPage> {
                     const SizedBox(height: 20),
                     // حقل البحث الأبيض
                     TextField(
+                      controller: searchController,
+                      textDirection: TextDirection.rtl,
                       decoration: InputDecoration(
                         hintText: 'ابحث عن مساحة عمل...',
                         hintStyle: const TextStyle(color: Colors.grey, fontSize: 14),
@@ -169,7 +202,20 @@ class _FilterPageState extends State<FilterPage> {
                         ),
                         onSelected: (bool selected) {
                           setState(() {
-                            if (selected) selectedQuickFilter = filterName;
+                            if (selected) {
+                              selectedQuickFilter = filterName;
+
+                              // ربط الفلتر السريع مع فلتر الخدمة المقابل تلقائياً
+                              servicesStatus.updateAll((key, value) => false);
+                              if (filterName == 'واي فاي') {
+                                servicesStatus['واي فاي'] = true;
+                              } else if (filterName == 'كهرباء') {
+                                servicesStatus['كهرباء'] = true;
+                              } else if (filterName == 'مواصلات') {
+                                servicesStatus['مواصلات'] = true;
+                              }
+                              // "الأبرز" لا يفعّل أي فلتر، يعرض كل النتائج
+                            }
                           });
                         },
                       ),
@@ -220,6 +266,8 @@ class _FilterPageState extends State<FilterPage> {
                           onSelected: (bool selected) {
                             setState(() {
                               servicesStatus[serviceName] = selected;
+                              // إعادة الفلتر السريع إلى "الأبرز" عند التعديل اليدوي على الخدمات
+                              selectedQuickFilter = 'الأبرز';
                             });
                           },
                         );
@@ -294,13 +342,13 @@ class _FilterPageState extends State<FilterPage> {
                     ],
                   ),
                 )
-              else if (!isLoading && results.isEmpty && selectedCount > 0)
-                // رسالة عدم وجود نتائج
+              else if (hasSearched && !isLoading && results.isEmpty)
+                // رسالة عدم وجود نتائج (تظهر فقط بعد الضغط على زر البحث)
                 const Center(
                   child: Padding(
                     padding: EdgeInsets.all(20),
                     child: Text(
-                      'لا توجد أماكن تطابق الفلاتر المختارة',
+                      'لا توجد أماكن تطابق بحثك أو الفلاتر المختارة',
                       style: TextStyle(color: Colors.black45, fontSize: 14),
                     ),
                   ),
