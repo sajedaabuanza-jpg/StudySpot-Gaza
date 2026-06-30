@@ -151,11 +151,14 @@ class RatingsService {
     final cafeRef = _db.collection('cafes').doc(cafeId);
     await _db.runTransaction((transaction) async {
       final cafeSnap = await transaction.get(cafeRef);
+
       if (!cafeSnap.exists) {
+        final fractions = [0.0, 0.0, 0.0, 0.0, 0.0];
+        fractions[rating - 1] = 1.0;
         transaction.set(cafeRef, {
           'avgRating': rating.toDouble(),
           'totalReviews': 1,
-          'barFractions': [0.0, 0.0, 0.0, 0.0, 0.0],
+          'barFractions': fractions,
         });
       } else {
         final currentTotal = cafeSnap['totalReviews'] as int? ?? 0;
@@ -163,11 +166,25 @@ class RatingsService {
             (cafeSnap['avgRating'] as num?)?.toDouble() ?? 0.0;
         final newTotal = currentTotal + 1;
         final newAvg = ((currentAvg * currentTotal) + rating) / newTotal;
+
+        final currentFractions = List<double>.from(
+          (cafeSnap.data() as Map<String, dynamic>?)?['barFractions'] ??
+              [0.0, 0.0, 0.0, 0.0, 0.0],
+        );
+        final currentCounts =
+        currentFractions.map((f) => (f * currentTotal).round()).toList();
+        currentCounts[rating - 1] += 1;
+        final newFractions = currentCounts
+            .map((c) => newTotal > 0 ? c / newTotal : 0.0)
+            .toList();
+
         transaction.update(cafeRef, {
           'avgRating': newAvg,
           'totalReviews': newTotal,
+          'barFractions': newFractions,
         });
       }
+
       transaction.set(cafeRef.collection('reviews').doc(), {
         'userId': userId,
         'userName': userName,
@@ -244,38 +261,38 @@ class _RatingsScreenState extends State<RatingsScreen> {
   Widget build(BuildContext context) {
     return Directionality(
       textDirection: TextDirection.ltr,
-    child: Material(
+      child: Material(
         color: Colors.transparent,
-      child: CupertinoPageScaffold(
-        backgroundColor: _darkGreen,
-        child: Stack(
-          children: [
-            const _WaveBackground(),
-            SafeArea(
-              child: Column(
-                children: [
-                  _AppBar(cafeName: widget.cafeName),
-                  Expanded(
-                    child: _loading
-                        ? const Center(
-                      child: CupertinoActivityIndicator(
-                        color: CupertinoColors.white,
-                        radius: 16,
+        child: CupertinoPageScaffold(
+          backgroundColor: _darkGreen,
+          child: Stack(
+            children: [
+              const _WaveBackground(),
+              SafeArea(
+                child: Column(
+                  children: [
+                    _AppBar(cafeName: widget.cafeName),
+                    Expanded(
+                      child: _loading
+                          ? const Center(
+                        child: CupertinoActivityIndicator(
+                          color: CupertinoColors.white,
+                          radius: 16,
+                        ),
+                      )
+                          : _Body(
+                        ratingInfo: _ratingInfo!,
+                        reviews: _reviews,
+                        onAddReview: _openAddReview,
                       ),
-                    )
-                        : _Body(
-                      ratingInfo: _ratingInfo!,
-                      reviews: _reviews,
-                      onAddReview: _openAddReview,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
-    ),    
     );
   }
 }
@@ -718,16 +735,34 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
   Future<void> _submit() async {
     if (_selectedRating == 0) return;
     setState(() => _submitting = true);
-    await RatingsService.submitReview(
-      cafeId: widget.cafeId,
-      userId: 'current_user_id',
-      userName: 'المستخدم',
-      rating: _selectedRating,
-      comment: _commentController.text.trim(),
-    );
-    if (!mounted) return;
-    Navigator.of(context).pop();
-    widget.onSubmitted();
+    try {
+      await RatingsService.submitReview(
+        cafeId: widget.cafeId,
+        userId: 'current_user_id',
+        userName: 'المستخدم',
+        rating: _selectedRating,
+        comment: _commentController.text.trim(),
+      );
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      widget.onSubmitted();
+    } catch (e) {
+      if (!mounted) return;
+      setState(() => _submitting = false);
+      showCupertinoDialog(
+        context: context,
+        builder: (_) => CupertinoAlertDialog(
+          title: const Text('حدث خطأ'),
+          content: Text('فشل إرسال التقييم: $e'),
+          actions: [
+            CupertinoDialogAction(
+              child: const Text('حسناً'),
+              onPressed: () => Navigator.of(context).pop(),
+            ),
+          ],
+        ),
+      );
+    }
   }
 
   @override

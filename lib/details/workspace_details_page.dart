@@ -3,13 +3,39 @@ import 'package:url_launcher/url_launcher.dart';
 // استيراد صفحة التقييمات
 import 'ratings_screen.dart';
 
-class workspace_details_page extends StatelessWidget {
+class workspace_details_page extends StatefulWidget {
   final Map<String, dynamic> workspace;
 
   const workspace_details_page({
     super.key,
     required this.workspace,
   });
+
+  @override
+  State<workspace_details_page> createState() => _workspace_details_pageState();
+}
+
+class _workspace_details_pageState extends State<workspace_details_page> {
+  double _liveRating = 0.0;
+  int _liveTotalReviews = 0;
+  bool _loadingRating = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadLiveRating();
+  }
+
+  Future<void> _loadLiveRating() async {
+    final info =
+    await RatingsService.fetchCafeRating(widget.workspace['id'] ?? 'unknown');
+    if (!mounted) return;
+    setState(() {
+      _liveRating = info.avgRating;
+      _liveTotalReviews = info.totalReviews;
+      _loadingRating = false;
+    });
+  }
 
   // ✨ دالة ذكية لإصلاح روابط ImgBB العادية وتحويلها لروابط مباشرة تلقائياً هنا أيضاً
   String _getCleanImageUrl(String url) {
@@ -24,7 +50,7 @@ class workspace_details_page extends StatelessWidget {
     return trimmedUrl;
   }
 
-  // 1. دالة حساب متوسط التقييم العام من حقل quality_scores
+  // 1. دالة حساب متوسط التقييم العام من حقل quality_scores (fallback لو ما في تقييمات حقيقية)
   double _getAverageRating(String? qualityScores) {
     if (qualityScores == null || qualityScores.isEmpty) return 4.0;
     try {
@@ -92,7 +118,12 @@ class workspace_details_page extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double rating = _getAverageRating(workspace['quality_scores']);
+    final workspace = widget.workspace;
+
+    // استخدمي التقييم الحقيقي من Firestore إذا في تقييمات فعلية، وإلا ارجعي للقديم
+    double rating = _liveTotalReviews > 0
+        ? _liveRating
+        : _getAverageRating(workspace['quality_scores']);
 
     List<String> servicesList = (workspace['filters_csv'] ?? '').toString().split(',');
     servicesList = servicesList.map((s) => s.trim().toLowerCase()).where((s) => s.isNotEmpty).toList();
@@ -238,10 +269,17 @@ class workspace_details_page extends StatelessWidget {
                       ),
                       Row(
                         children: [
-                          Text(
-                            rating.toStringAsFixed(1),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
-                          ),
+                          if (_loadingRating)
+                            const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          else
+                            Text(
+                              rating.toStringAsFixed(1),
+                              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, fontFamily: 'Cairo'),
+                            ),
                           const SizedBox(width: 5),
                           Row(
                             children: List.generate(5, (index) {
@@ -421,8 +459,8 @@ class workspace_details_page extends StatelessWidget {
                               side: const BorderSide(color: Color(0xFF386A1B), width: 1.5),
                             ),
                           ),
-                          onPressed: () {
-                            Navigator.push(
+                          onPressed: () async {
+                            await Navigator.push(
                               context,
                               MaterialPageRoute(
                                 builder: (_) => RatingsScreen(
@@ -431,6 +469,8 @@ class workspace_details_page extends StatelessWidget {
                                 ),
                               ),
                             );
+                            // لما يرجع من صفحة التقييمات، حدّثي الرقم هون كمان
+                            _loadLiveRating();
                           },
                           child: const Text("التقييمات والتعليقات", style: TextStyle(color: Color(0xFF386A1B), fontSize: 16, fontWeight: FontWeight.bold, fontFamily: 'Cairo')),
                         ),
