@@ -93,6 +93,7 @@ class _NuseiratState extends State<Nuseirat> {
               double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
+                workspaceId: item['id'].toString(),
                 title: item['name'] ?? 'بدون اسم',
                 location: "${item['city'] ?? ''} - ${item['district'] ?? ''}",
                 imagePath: item['image_url'] ?? '',
