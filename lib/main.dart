@@ -5,12 +5,21 @@ import 'package:studyspot/homePage.dart';
 import 'city.dart';
 import 'DefaultFirebaseOptions.dart';
 
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  try {
+    // إذا كان الفايربيس لم يتم تهيئته بعد، سيقوم بتهيئته هنا
+    if (Firebase.apps.isEmpty) {
+      await Firebase.initializeApp(
+        options: DefaultFirebaseOptions.currentPlatform,
+      );
+    }
+  } catch (e) {
+    // إذا كان مهيأ بالفعل أو حدث خطأ بسيط، سيتخطى الانهيار ويكمل تشغيل التطبيق
+    print("Firebase loading catch: $e");
+  }
 
   runApp(const MyApp());
 }
