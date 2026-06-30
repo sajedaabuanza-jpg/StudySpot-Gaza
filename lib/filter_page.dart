@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:studyspot/details/add_workspace_screen.dart';
+import 'package:studyspot/details/workspace_details_page.dart';
 import 'package:studyspot/favorite/favorite.dart';
 
 class FilterPage extends StatefulWidget {
@@ -340,7 +341,8 @@ class _FilterPageState extends State<FilterPage> {
                       ),
                       const SizedBox(height: 10),
                       // بناء كرت لكل مكان في النتائج
-                      ...results.map((place) => _buildPlaceCard(place, primaryGreen)).toList(),
+                      // ...results.map((place) => _buildPlaceCard(place, primaryGreen)).toList(),
+                      ...results.map((place) => _buildPlaceCard(context, place, primaryGreen)).toList(),
                     ],
                   ),
                 )
@@ -431,14 +433,84 @@ class _FilterPageState extends State<FilterPage> {
   }
 
   // --- كرت عرض المكان في النتائج ---
-  Widget _buildPlaceCard(Map<String, dynamic> place, Color primaryGreen) {
-    return Container(
+//   Widget _buildPlaceCard(Map<String, dynamic> place, Color primaryGreen) {
+//     return Container(
+//       margin: const EdgeInsets.only(bottom: 15),
+//       decoration: BoxDecoration(
+//         color: Colors.white,
+//         borderRadius: BorderRadius.circular(18),
+//         boxShadow: [
+//           BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3)),
+//         ],
+//       ),
+//       child: Padding(
+//         padding: const EdgeInsets.all(15),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             // اسم المكان
+//             Text(
+//               place['name'] ?? '',
+//               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+//             ),
+//             const SizedBox(height: 6),
+//             // المدينة والمنطقة
+//             Row(
+//               children: [
+//                 const Icon(Icons.location_on, size: 14, color: Colors.grey),
+//                 const SizedBox(width: 4),
+//                 Text(
+//                   '${place['city'] ?? ''} - ${place['district'] ?? ''}',
+//                   style: const TextStyle(fontSize: 13, color: Colors.grey),
+//                 ),
+//               ],
+//             ),
+//             const SizedBox(height: 6),
+//             // ساعات العمل
+//             Row(
+//               children: [
+//                 const Icon(Icons.access_time, size: 14, color: Colors.grey),
+//                 const SizedBox(width: 4),
+//                 Text(
+//                   place['working_hours'] ?? '',
+//                   style: const TextStyle(fontSize: 13, color: Colors.grey),
+//                 ),
+//               ],
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+}
+Widget _buildPlaceCard(
+  BuildContext context,
+  Map<String, dynamic> place,
+  Color primaryGreen,
+) {
+  return InkWell(
+    borderRadius: BorderRadius.circular(18),
+    onTap: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => workspace_details_page(
+            workspace: place,
+          ),
+        ),
+      );
+    },
+    child: Container(
       margin: const EdgeInsets.only(bottom: 15),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(18),
         boxShadow: [
-          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 3)),
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
         ],
       ),
       child: Padding(
@@ -446,38 +518,45 @@ class _FilterPageState extends State<FilterPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // اسم المكان
             Text(
               place['name'] ?? '',
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Color(0xFF333333)),
+              style: const TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF333333),
+              ),
             ),
             const SizedBox(height: 6),
-            // المدينة والمنطقة
             Row(
               children: [
                 const Icon(Icons.location_on, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
                   '${place['city'] ?? ''} - ${place['district'] ?? ''}',
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
                 ),
               ],
             ),
             const SizedBox(height: 6),
-            // ساعات العمل
             Row(
               children: [
                 const Icon(Icons.access_time, size: 14, color: Colors.grey),
                 const SizedBox(width: 4),
                 Text(
                   place['working_hours'] ?? '',
-                  style: const TextStyle(fontSize: 13, color: Colors.grey),
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey,
+                  ),
                 ),
               ],
             ),
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
 }
