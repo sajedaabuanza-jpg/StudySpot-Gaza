@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:studyspot/details/add_workspace_screen.dart';
+import 'package:studyspot/favorite/favorite.dart';
 
 class FilterPage extends StatefulWidget {
   const FilterPage({Key? key}) : super(key: key);
@@ -388,6 +390,7 @@ class _FilterPageState extends State<FilterPage> {
                 GestureDetector(
                   onTap: () {
                     // هنا سيتم إضافة صفحة المفضلة لاحقاً
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => const favorite()));
                     print("تم الضغط على المفضلة");
                   },
                   child: const Column(
@@ -403,6 +406,12 @@ class _FilterPageState extends State<FilterPage> {
                 GestureDetector(
                   onTap: () {
                     // هنا سيتم إضافة صفحة إضافة مساحة لاحقاً
+                    Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddWorkspaceScreen(),
+                            ),
+                          );
                     print("تم الضغط على أضف مساحتك");
                   },
                   child: const Column(
