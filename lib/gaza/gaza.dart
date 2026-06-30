@@ -3,6 +3,7 @@ import 'package:studyspot/gaza/al_nusser.dart';
 import 'package:studyspot/gaza/alremal.dart';
 import 'package:studyspot/gaza/shamalGaza.dart';
 import 'package:studyspot/gaza/talallhawa.dart';
+import 'package:studyspot/gaza/alshatea.dart';
 import 'altofah.dart';
 
 class gaza extends StatelessWidget {
@@ -59,7 +60,7 @@ class gaza extends StatelessWidget {
                       _buildRegionCard(context, 'الرمال', Icons.apartment, const alremal()),
                       _buildRegionCard(context, 'تل الهوا', Icons.business_outlined, const talallhawa()),
                       _buildRegionCard(context, 'شمال غزة', Icons.explore_outlined, const shamalGaza()),
-                      _buildRegionCard(context, 'الشاطئ', Icons.location_city, const al_nusser()),
+                      _buildRegionCard(context, 'الشاطئ', Icons.location_city, const alshatea()),
                       const SizedBox(height: 30),
                     ],
                   ),
