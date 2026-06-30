@@ -16,7 +16,7 @@ android {
         compileSdk = flutter.compileSdkVersion
 
         // 👇 قم بتغيير هذا السطر وكتابة رقم الإصدار السليم يدوياً بين علامتي تنصيص
-        ndkVersion = "26.1.10909125"
+        ndkVersion = "28.2.13676358"
 
         compileOptions {
             sourceCompatibility = JavaVersion.VERSION_17
