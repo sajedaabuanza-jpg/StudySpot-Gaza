@@ -6,6 +6,7 @@ import 'package:studyspot/al-westa/al-maghazi.dart';
 import 'package:studyspot/al-westa/al-zawayda.dart';
 import 'package:studyspot/al-westa/deir al-balah.dart';
 import 'package:studyspot/al-westa/nuseirat.dart';
+import 'package:studyspot/favorite/favorite.dart';
 
 class AlWesta extends StatelessWidget {
   const AlWesta({super.key});
@@ -20,6 +21,17 @@ class AlWesta extends StatelessWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF386A1B)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Color(0xFF386A1B)),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const favorite()),
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [

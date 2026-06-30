@@ -4,6 +4,7 @@ import 'package:studyspot/card/WorkspaceCard.dart';
 import 'package:studyspot/details/workspace_details_page.dart';
 
 import 'package:studyspot/add_workspace_screen.dart';
+import 'package:studyspot/favorite/favorite.dart';
 class Nuseirat extends StatefulWidget {
   const Nuseirat({super.key});
 
@@ -43,6 +44,17 @@ class _NuseiratState extends State<Nuseirat> {
         title: const Text("النصيرات", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const favorite()),
+              );
+            },
+          ),
+        ],
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () {
