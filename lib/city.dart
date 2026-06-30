@@ -2,6 +2,7 @@ import 'package:studyspot/filter_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:studyspot/al-westa/al-westa.dart';
+import 'package:studyspot/favorite/favorite.dart';
 import 'package:studyspot/khanuonis/khanyonis.dart';
 import 'package:studyspot/gaza/gaza.dart';
 import 'package:studyspot/googleLogin/AuthService.dart';
@@ -31,6 +32,14 @@ class _cityState extends State<city> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         iconTheme: const IconThemeData(color: Color(0xFF386A1B)),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Color(0xFF386A1B)),
+            onPressed: () {
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const favorite()));
+            },
+          ),
+        ],
       ),
       // --- الـ Drawer المعدل ---
       drawer: Drawer(
