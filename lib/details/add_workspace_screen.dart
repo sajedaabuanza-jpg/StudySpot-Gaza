@@ -33,22 +33,6 @@ const List<String> _khanDistricts = [
 ];
 
 // ══════════════════════════════════════════════════════════════════════════════
-//  قيم filters_csv المطابقة لـ filter_page.dart و workspace_details_page.dart
-//  filter_page serviceToFilter:
-//    كهرباء   -> electricity
-//    مشروبات  -> drinks
-//    واي فاي  -> internet   ← (وليس wifi)
-//    دورات مياه -> wc
-//    مواصلات  -> transport
-//  workspace_details_page يقبل أيضاً: food, cafe, print, wifi
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ══════════════════════════════════════════════════════════════════════════════
-//  quality_scores keys المطابقة لـ workspace_details_page._getSpecificScore:
-//    internet | stability | electricity | environment
-// ══════════════════════════════════════════════════════════════════════════════
-
-// ══════════════════════════════════════════════════════════════════════════════
 //  REUSABLE: Section Header
 // ══════════════════════════════════════════════════════════════════════════════
 
@@ -199,13 +183,13 @@ class _DropdownFieldState extends State<_DropdownField> {
           icon: const Icon(Icons.keyboard_arrow_down, color: kGreen, size: 20),
           items: widget.items
               .map((e) => DropdownMenuItem(
-                    value: e,
-                    child: Align(
-                      alignment: Alignment.centerRight,
-                      child: Text(e,
-                          style: const TextStyle(fontSize: 12, fontFamily: 'Cairo')),
-                    ),
-                  ))
+            value: e,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: Text(e,
+                  style: const TextStyle(fontSize: 12, fontFamily: 'Cairo')),
+            ),
+          ))
               .toList(),
           onChanged: (v) {
             setState(() => _val = v);
@@ -234,14 +218,14 @@ class _CounterState extends State<_Counter> {
   int _v = 0;
 
   Widget _btn(IconData ic, Color bg, VoidCallback fn) => GestureDetector(
-        onTap: fn,
-        child: Container(
-          width: 28,
-          height: 28,
-          decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
-          child: Icon(ic, color: kWhite, size: 15),
-        ),
-      );
+    onTap: fn,
+    child: Container(
+      width: 28,
+      height: 28,
+      decoration: BoxDecoration(color: bg, shape: BoxShape.circle),
+      child: Icon(ic, color: kWhite, size: 15),
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -367,7 +351,7 @@ class _RatingRowState extends State<_RatingRow> {
 class _Chip extends StatefulWidget {
   final String label;
   final IconData icon;
-  final String value; // القيمة المحفوظة في filters_csv
+  final String value;
   final ValueChanged<bool>? onToggle;
 
   const _Chip({
@@ -436,7 +420,7 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
   final _nameEnController       = TextEditingController();
   final _phoneController        = TextEditingController();
   final _emailController        = TextEditingController();
-  final _detailAddressController = TextEditingController(); // العنوان التفصيلي (nearest_landmark)
+  final _detailAddressController = TextEditingController();
   final _workHoursController    = TextEditingController();
   final _managerController      = TextEditingController();
   final _imageUrlController     = TextEditingController();
@@ -445,27 +429,22 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
   final _locationUrlController  = TextEditingController();
 
   // ── Dropdowns ─────────────────────────────────────────────────────────────
-  String? _selectedGovernorate; // المحافظة: غزة / الوسطى / خانيونس
-  String? _selectedDistrict;   // المنطقة: يطابق isEqualTo في صفحات المناطق
+  String? _selectedGovernorate;
+  String? _selectedDistrict;
   String? _selectedType;
   String? _selectedPricingSystem;
 
-  // قائمة المناطق الديناميكية بناءً على المحافظة
   List<String> _availableDistricts = [];
 
   // ── Filters (filters_csv) ─────────────────────────────────────────────────
-  // القيم مطابقة تماماً لـ filter_page.dart serviceToFilter
-  // و workspace_details_page servicesList.contains()
   final Set<String> _selectedFilters = {};
 
   // ── Quality Scores ────────────────────────────────────────────────────────
-  // المفاتيح: internet | stability | electricity | environment
-  // مطابقة لـ workspace_details_page._getSpecificScore(quality_scores, key)
-  int _ratingInternet     = 4; // internet
-  int _ratingSecurity     = 3; // stability
-  int _ratingEquipment    = 5; // electricity
-  int _ratingQuiet        = 3; // environment
-  int _ratingPrice        = 4; // للعرض فقط (لا يُحفظ في quality_scores)
+  int _ratingInternet     = 4;
+  int _ratingSecurity     = 3;
+  int _ratingEquipment    = 5;
+  int _ratingQuiet        = 3;
+  int _ratingPrice        = 4;
 
   // ── Counters ──────────────────────────────────────────────────────────────
   final _seatsSingle = ValueNotifier<int>(0);
@@ -493,7 +472,6 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     super.dispose();
   }
 
-  // ── تحديث قائمة المناطق عند تغيير المحافظة ───────────────────────────────
   void _onGovernorateChanged(String? gov) {
     setState(() {
       _selectedGovernorate = gov;
@@ -510,9 +488,7 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     });
   }
 
-  // ── دالة الحفظ إلى Firestore ──────────────────────────────────────────────
   Future<void> _addWorkspace() async {
-    // التحقق من الحقول المطلوبة
     if (_nameArController.text.trim().isEmpty) {
       _showError('يرجى إدخال اسم المساحة بالعربية');
       return;
@@ -533,35 +509,23 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
     setState(() => _isLoading = true);
 
     try {
-      // ── 1. quality_scores ─────────────────────────────────────────────────
-      // الصيغة: "internet:4|stability:3|electricity:5|environment:3"
-      // المفاتيح مطابقة لـ _getSpecificScore في workspace_details_page
       final qualityScores =
           'internet:$_ratingInternet'
           '|stability:$_ratingSecurity'
           '|electricity:$_ratingEquipment'
           '|environment:$_ratingQuiet';
 
-      // ── 2. filters_csv ────────────────────────────────────────────────────
-      // القيم مطابقة لـ serviceToFilter في filter_page.dart:
-      //   electricity | drinks | internet | wc | transport
-      // و workspace_details_page.dart servicesList.contains()
       final filtersCsv = _selectedFilters.join(',');
 
-      // ── 3. pricing_plans ──────────────────────────────────────────────────
-      // الصيغة: "اشتراك شهري=150₪|يومي=10₪"
       String pricingPlans = _pricingPlansController.text.trim();
       if (pricingPlans.isEmpty) {
         final system = _selectedPricingSystem ?? 'بالساعة';
         pricingPlans = 'سعر $system=يرجى الاستفسار';
       }
 
-      // ── 4. حساب التقييم العام ─────────────────────────────────────────────
       final double avgRating =
           (_ratingInternet + _ratingSecurity + _ratingEquipment + _ratingQuiet) / 4.0;
 
-      // ── 5. تفاصيل الكهرباء والإنترنت ─────────────────────────────────────
-      // نتحقق من القيم الإنجليزية في filters_csv (وليس النص العربي)
       final hasElectricity = _selectedFilters.contains('electricity');
       final hasInternet    = _selectedFilters.contains('internet');
 
@@ -572,49 +536,35 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
           ? 'واي فاي سريع ومتوفر'
           : 'يرجى الاستفسار عن الإنترنت';
 
-      // ── 6. كائن البيانات الكامل ───────────────────────────────────────────
-      // جميع المفاتيح مطابقة لما تقرأه workspace_details_page و filter_page
       final workspaceData = <String, dynamic>{
-        // ─ مفاتيح workspace_details_page ─────────────────────────────────
         'name'                : _nameArController.text.trim(),
         'name_en'             : _nameEnController.text.trim().isEmpty
-                                  ? _nameArController.text.trim()
-                                  : _nameEnController.text.trim(),
+            ? _nameArController.text.trim()
+            : _nameEnController.text.trim(),
         'description'         : _descriptionController.text.trim().isEmpty
-                                  ? 'مساحة عمل متاحة للدراسة والعمل'
-                                  : _descriptionController.text.trim(),
-        // city = المحافظة (غزة / الوسطى / خانيونس)
+            ? 'مساحة عمل متاحة للدراسة والعمل'
+            : _descriptionController.text.trim(),
         'city'                : _selectedGovernorate ?? '',
-        // district = اسم المنطقة الدقيق (يطابق isEqualTo في صفحات المناطق)
         'district'            : _selectedDistrict ?? '',
-        // location = العنوان التفصيلي للعرض
         'location'            : _detailAddressController.text.trim(),
         'phone'               : _phoneController.text.trim(),
         'image_url'           : _imageUrlController.text.trim(),
-        // pricing_plans: صيغة "عنوان=سعر|عنوان=سعر"
         'pricing_plans'       : pricingPlans,
-        // filters_csv: قيم إنجليزية مفصولة بفاصلة
-        // المقبولة: electricity, drinks, internet, wc, transport, food, cafe, print
         'filters_csv'         : filtersCsv,
-        // quality_scores: "internet:N|stability:N|electricity:N|environment:N"
         'quality_scores'      : qualityScores,
-        // working_hours (وليس opening_hours) — مطابق لما تقرأه filter_page و details
         'working_hours'       : _workHoursController.text.trim().isEmpty
-                                  ? 'غير محدد'
-                                  : _workHoursController.text.trim(),
+            ? 'غير محدد'
+            : _workHoursController.text.trim(),
         'rating'              : avgRating,
-        // ─ مفاتيح إضافية تقرأها workspace_details_page ───────────────────
         'electricity_details' : electricityDetails,
         'internet_details'    : internetDetails,
         'nearest_landmark'    : _detailAddressController.text.trim().isEmpty
-                                  ? _selectedDistrict ?? ''
-                                  : _detailAddressController.text.trim(),
+            ? _selectedDistrict ?? ''
+            : _detailAddressController.text.trim(),
         'location_url'        : _locationUrlController.text.trim(),
-        // ─ مفاتيح تقرأها ratings_screen ──────────────────────────────────
         'avgRating'           : avgRating,
         'totalReviews'        : 0,
         'barFractions'        : [0.0, 0.0, 0.0, 0.0, 0.0],
-        // ─ مفاتيح إضافية ─────────────────────────────────────────────────
         'amenities'           : _selectedFilters.toList(),
         'price_per_hour'      : _selectedPricingSystem ?? 'بالساعة',
         'latitude'            : 0.0,
@@ -624,9 +574,9 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
         'seats_group'         : _seatsGroup.value,
         'seats_hall'          : _seatsHall.value,
         'total_seats'         : _seatsSingle.value
-                                + _seatsPair.value * 2
-                                + _seatsGroup.value * 4
-                                + _seatsHall.value * 10,
+            + _seatsPair.value * 2
+            + _seatsGroup.value * 4
+            + _seatsHall.value * 10,
         'manager'             : _managerController.text.trim(),
         'email'               : _emailController.text.trim(),
         'workspace_type'      : _selectedType ?? 'مساحة عمل',
@@ -635,12 +585,10 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
         'verified'            : false,
       };
 
-      // ── 7. الحفظ في Firestore ─────────────────────────────────────────────
       await FirebaseFirestore.instance
           .collection('workspaces')
           .add(workspaceData);
 
-      // ── 8. رسالة النجاح والعودة ───────────────────────────────────────────
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -683,15 +631,15 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
   Widget _gap([double h = 10]) => SizedBox(height: h);
 
   Widget _card({required Widget child}) => Container(
-        width: double.infinity,
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: kWhite,
-          border: Border.all(color: kBorder),
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: child,
-      );
+    width: double.infinity,
+    padding: const EdgeInsets.all(12),
+    decoration: BoxDecoration(
+      color: kWhite,
+      border: Border.all(color: kBorder),
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: child,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -713,14 +661,6 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
             ),
           ),
           centerTitle: true,
-          actions: [
-            IconButton(
-              icon: const Icon(Icons.home_outlined, color: kWhite),
-              onPressed: () {
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-            ),
-          ],
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -874,7 +814,6 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
       children: [
         const _SectionHeader(title: 'الموقع والعنوان', icon: Icons.location_on_outlined),
         _gap(8),
-        // Dropdown 1: المحافظة — تحدد قائمة المناطق أدناه
         _DropdownField(
           hint: 'المحافظة / المنطقة',
           leadingIcon: Icons.map_outlined,
@@ -882,8 +821,6 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
           onChanged: _onGovernorateChanged,
         ),
         _gap(6),
-        // Dropdown 2: المنطقة — قيمتها تُحفظ في حقل district
-        // يجب أن تطابق قيم isEqualTo في صفحات المناطق
         _DropdownField(
           hint: 'المنطقة (الحي)',
           leadingIcon: Icons.location_city_outlined,
@@ -897,7 +834,6 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
           },
         ),
         _gap(6),
-        // Dropdown 3: نوع المساحة
         _DropdownField(
           hint: 'نوع المساحة',
           leadingIcon: Icons.business_outlined,
@@ -905,14 +841,12 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
           onChanged: (v) => _selectedType = v,
         ),
         _gap(6),
-        // العنوان التفصيلي — يُحفظ في: location, nearest_landmark
         _InputField(
           hint: 'العنوان التفصيلي (المدينة، الشارع، رقم البناية)',
           leadingIcon: Icons.location_city_outlined,
           controller: _detailAddressController,
         ),
         _gap(6),
-        // رابط الخريطة — يُحفظ في location_url
         _InputField(
           hint: 'رابط الموقع على الخريطة (Google Maps)',
           leadingIcon: Icons.map_outlined,
@@ -978,8 +912,6 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
                 ],
               ),
               _gap(8),
-              // يُحفظ في: working_hours (وليس opening_hours)
-              // مطابق لما تقرأه filter_page و workspace_details_page
               _InputField(
                 hint: 'أوقات الإتاحة (الأيام والساعات)..',
                 controller: _workHoursController,
@@ -993,42 +925,38 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
 
   // ── SECTION 5: المرافق الإضافية ────────────────────────────────────────────
   Widget _section5Facilities() {
-    // القيم (value) مطابقة لـ serviceToFilter في filter_page.dart:
-    //   electricity, drinks, internet, wc, transport
-    // و workspace_details_page.servicesList.contains()
-    // ⚠️ واي فاي = 'internet' (وليس 'wifi') لتطابق filter_page
     final row1 = [
       (Icons.flash_on,            'كهرباء',         'electricity'),
-      (Icons.wifi_outlined,       'واي فاي',        'internet'),   // ← 'internet' لا 'wifi'
+      (Icons.wifi_outlined,       'واي فاي',        'internet'),
       (Icons.local_cafe_outlined, 'مشروبات',        'drinks'),
       (Icons.directions_bus,      'مواصلات',        'transport'),
     ];
     final row2 = [
       (Icons.wc,                  'دورات مياه',     'wc'),
-      (Icons.print_outlined,      'طباعة',          'print'),      // ← تطابق details_page
+      (Icons.print_outlined,      'طباعة',          'print'),
       (Icons.wb_sunny_outlined,   'في الهواء الطلق','outdoor'),
       (Icons.keyboard_outlined,   'مكاتب',          'desks'),
     ];
 
     Widget chipRow(List<(IconData, String, String)> chips) => Row(
-          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-          children: chips
-              .map((c) => _Chip(
-                    icon: c.$1,
-                    label: c.$2,
-                    value: c.$3,
-                    onToggle: (isOn) {
-                      setState(() {
-                        if (isOn) {
-                          _selectedFilters.add(c.$3);
-                        } else {
-                          _selectedFilters.remove(c.$3);
-                        }
-                      });
-                    },
-                  ))
-              .toList(),
-        );
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: chips
+          .map((c) => _Chip(
+        icon: c.$1,
+        label: c.$2,
+        value: c.$3,
+        onToggle: (isOn) {
+          setState(() {
+            if (isOn) {
+              _selectedFilters.add(c.$3);
+            } else {
+              _selectedFilters.remove(c.$3);
+            }
+          });
+        },
+      ))
+          .toList(),
+    );
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -1050,28 +978,24 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
         _card(
           child: Column(
             children: [
-              // internet → quality_scores key: 'internet'
               _RatingRow(
                 label: 'الإنترنت',
                 filled: _ratingInternet,
                 color: const Color(0xFF386A1B),
                 onChanged: (v) => setState(() => _ratingInternet = v),
               ),
-              // stability → quality_scores key: 'stability'
               _RatingRow(
                 label: 'الأمان',
                 filled: _ratingSecurity,
                 color: const Color(0xFF2196F3),
                 onChanged: (v) => setState(() => _ratingSecurity = v),
               ),
-              // electricity → quality_scores key: 'electricity'
               _RatingRow(
                 label: 'التجهيزات',
                 filled: _ratingEquipment,
                 color: const Color(0xFFFF9800),
                 onChanged: (v) => setState(() => _ratingEquipment = v),
               ),
-              // environment → quality_scores key: 'environment'
               _RatingRow(
                 label: 'الهدوء',
                 filled: _ratingQuiet,
@@ -1204,7 +1128,7 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: List.generate(
               4,
-              (_) => Container(
+                  (_) => Container(
                 width: 60,
                 height: 60,
                 decoration: BoxDecoration(
@@ -1265,25 +1189,25 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
             ),
             child: _isLoading
                 ? const SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(color: kWhite, strokeWidth: 2),
-                  )
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(color: kWhite, strokeWidth: 2),
+            )
                 : const Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.send, color: kWhite, size: 20),
-                      SizedBox(width: 10),
-                      Text(
-                        'إرسال الطلب',
-                        style: TextStyle(
-                            color: kWhite,
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            fontFamily: 'Cairo'),
-                      ),
-                    ],
-                  ),
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.send, color: kWhite, size: 20),
+                SizedBox(width: 10),
+                Text(
+                  'إرسال الطلب',
+                  style: TextStyle(
+                      color: kWhite,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      fontFamily: 'Cairo'),
+                ),
+              ],
+            ),
           ),
         ),
       ],

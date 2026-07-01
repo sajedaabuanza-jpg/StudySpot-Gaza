@@ -1,12 +1,11 @@
-import 'package:flutter/material.dart';
+import 'package:studyspot/filter_page.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:studyspot/city.dart';
 import 'package:studyspot/details/add_workspace_screen.dart';
-// import 'package:studyspot/details/add_workspace_screen.dart';
 import 'package:studyspot/details/workspace_details_page.dart';
 import 'package:studyspot/favorite/favorites_service.dart';
-// اناااااا
 
 class favorite extends StatelessWidget {
   const favorite({super.key});
@@ -37,8 +36,8 @@ class favorite extends StatelessWidget {
   }
 
   List<_FavoriteSpace> _favoriteSpacesFromWorkspaces(
-    List<Map<String, dynamic>> workspaces,
-  ) {
+      List<Map<String, dynamic>> workspaces,
+      ) {
     return workspaces.map((workspace) {
       final data = Map<String, dynamic>.from(workspace);
       final workspaceId = (data['workspaceId'] ?? data['id']).toString();
@@ -57,13 +56,114 @@ class favorite extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final scale = (size.width / _designWidth) * 0.5;
-    double s(double v) => v * scale;
-    final navHeight = s(100);
+    final Color primaryGreen = const Color(0xFF3B6D11);
 
     return Directionality(
       textDirection: TextDirection.rtl,
       child: Scaffold(
         backgroundColor: Colors.transparent,
+
+        // شريط القائمة السفلي المحدث (يبرز المفضلة لأعلى ويضع الرئيسية على اليمين)
+        bottomNavigationBar: Container(
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12,
+                blurRadius: 10,
+                offset: Offset(0, -2),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: SizedBox(
+              height: 70,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [ // تم فصلها هنا في سطر جديد لإصلاح الخطأ
+                  // 1. زر الرئيسية
+                  GestureDetector(
+                    onTap: () {
+                      if (Navigator.canPop(context)) {
+                        Navigator.pop(context); // يعود فوراً لصفحة المدينة التي جئت منها
+                      } else {
+                        Navigator.popUntil(context, (route) => route.isFirst);
+                      }
+                    },
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(Icons.home_outlined, color: Colors.grey, size: 26),
+                        SizedBox(height: 4),
+                        Text(
+                          'الرئيسية',
+                          style: TextStyle(color: Colors.grey, fontSize: 12, fontFamily: 'Cairo'),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // 2. زر المفضلة (البارز في المنتصف)
+                  Transform.translate(
+                    offset: const Offset(0, -14),
+                    child: GestureDetector(
+                      onTap: () {
+                        // نحن بالفعل في صفحة المفضلة
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: primaryGreen,
+                          shape: BoxShape.circle,
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black26,
+                              blurRadius: 8,
+                              offset: Offset(0, 4),
+                            )
+                          ],
+                        ),
+                        child: const Icon(Icons.favorite, color: Colors.white, size: 30),
+                      ),
+                    ),
+                  ),
+
+                  // 3. زر أضف مساحتك
+                  // 1. زر الرئيسية (يعود بك إلى صفحة المدينة التي جئت منها)
+                  GestureDetector(
+                    onTap: () {
+                      // الانتقال إلى صفحة إضافة مساحة عمل (AddWorkspaceScreen)
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const AddWorkspaceScreen(),
+                        ),
+                      );
+                    },
+                    child: const Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        // أيقونة دبوس الموقع المفرغ لتطابق التصميم المطلوب
+                        Icon(Icons.location_on_outlined, color: Colors.grey, size: 26),
+                        SizedBox(height: 4),
+                        Text(
+                          'أضف مساحة',
+                          style: TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                            fontFamily: 'Cairo',
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ),
+
         body: Stack(
           children: [
             Positioned.fill(
@@ -74,7 +174,7 @@ class favorite extends StatelessWidget {
             ),
             SafeArea(
               child: Padding(
-                padding: EdgeInsets.only(bottom: navHeight),
+                padding: const EdgeInsets.only(bottom: 70),
                 child: StreamBuilder<User?>(
                   stream: _favoritesService.authStateChanges,
                   builder: (context, authSnapshot) {
@@ -133,15 +233,15 @@ class favorite extends StatelessWidget {
                           builder: (context, workspaceSnapshot) {
                             final favoriteSpaces = workspaceSnapshot.hasData
                                 ? _favoriteSpacesFromWorkspaces(
-                                    workspaceSnapshot.data!,
-                                  )
+                              workspaceSnapshot.data!,
+                            )
                                 : <_FavoriteSpace>[];
 
                             return _FavoritesLayout(
                               scale: scale,
                               loading:
-                                  workspaceSnapshot.connectionState ==
-                                      ConnectionState.waiting &&
+                              workspaceSnapshot.connectionState ==
+                                  ConnectionState.waiting &&
                                   workspaceIds.isNotEmpty,
                               errorMessage: workspaceSnapshot.hasError
                                   ? "حدث خطأ أثناء تحميل تفاصيل المفضلة"
@@ -155,10 +255,6 @@ class favorite extends StatelessWidget {
                   },
                 ),
               ),
-            ),
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: _BottomNav(scale: scale),
             ),
           ],
         ),
@@ -233,38 +329,38 @@ class _FavoritesLayout extends StatelessWidget {
             child: Center(child: Text(errorMessage!)),
           )
         else if (favoriteSpaces.isEmpty)
-          SliverFillRemaining(
-            hasScrollBody: true,
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return SingleChildScrollView(
-                  physics: const ClampingScrollPhysics(),
-                  child: ConstrainedBox(
-                    constraints: BoxConstraints(
-                      minHeight: constraints.maxHeight,
+            SliverFillRemaining(
+              hasScrollBody: true,
+              child: LayoutBuilder(
+                builder: (context, constraints) {
+                  return SingleChildScrollView(
+                    physics: const ClampingScrollPhysics(),
+                    child: ConstrainedBox(
+                      constraints: BoxConstraints(
+                        minHeight: constraints.maxHeight,
+                      ),
+                      child: Center(child: _EmptyState(scale: scale)),
                     ),
-                    child: Center(child: _EmptyState(scale: scale)),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
+            )
+          else
+            SliverPadding(
+              padding: EdgeInsets.symmetric(horizontal: s(24)),
+              sliver: SliverList(
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final isLast = index == favoriteSpaces.length - 1;
+                  return Padding(
+                    padding: EdgeInsets.only(bottom: isLast ? 0 : s(18)),
+                    child: _FavoriteCard(
+                      scale: scale,
+                      space: favoriteSpaces[index],
+                    ),
+                  );
+                }, childCount: favoriteSpaces.length),
+              ),
             ),
-          )
-        else
-          SliverPadding(
-            padding: EdgeInsets.symmetric(horizontal: s(24)),
-            sliver: SliverList(
-              delegate: SliverChildBuilderDelegate((context, index) {
-                final isLast = index == favoriteSpaces.length - 1;
-                return Padding(
-                  padding: EdgeInsets.only(bottom: isLast ? 0 : s(18)),
-                  child: _FavoriteCard(
-                    scale: scale,
-                    space: favoriteSpaces[index],
-                  ),
-                );
-              }, childCount: favoriteSpaces.length),
-            ),
-          ),
       ],
     );
   }
@@ -283,20 +379,20 @@ class _Header extends StatelessWidget {
       constraints: BoxConstraints(minHeight: s(120)),
       child: Stack(
         children: [
-          Align(
-            alignment: Alignment.topRight,
-            child: IconButton(
-              onPressed: () {},
-              padding: EdgeInsets.zero,
-              icon: Icon(Icons.menu, size: s(34), color: Colors.black),
-            ),
-          ),
+          // Align(
+          //   alignment: Alignment.topRight,
+          //   child: IconButton(
+          //     onPressed: () {},
+          //     padding: EdgeInsets.zero,
+          //     icon: Icon(Icons.menu, size: s(34), color: Colors.black),
+          //   ),
+          // ),
           Align(
             alignment: Alignment.topCenter,
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                SizedBox(height: s(6)),
+                Navigator.canPop(context) ? SizedBox(height: s(6)) : SizedBox(height: s(6)),
                 _BrandMark(scale: scale),
                 SizedBox(height: s(10)),
                 Text(
@@ -519,7 +615,7 @@ class _FavoriteCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: List.generate(
                       5,
-                      (i) => Icon(
+                          (i) => Icon(
                         i < space.rating.round()
                             ? Icons.star
                             : Icons.star_border,
@@ -643,143 +739,6 @@ class _EmptyState extends StatelessWidget {
             ),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _BottomNav extends StatelessWidget {
-  const _BottomNav({required this.scale});
-
-  final double scale;
-
-  double s(double v) => v * scale;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      top: false,
-      child: SizedBox(
-        height: s(95),
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            // الخلفية + الأزرار الجانبية
-            Align(
-              alignment: Alignment.bottomCenter,
-              child: Container(
-                height: s(70),
-                width: double.infinity,
-                color: const Color(0xFF3B6D11),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    _BottomNavItem(
-                      icon: Icons.home_outlined,
-                      label: 'الرئيسية',
-                      scale: scale,
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const city()),
-                        );
-                      },
-                    ),
-                    _BottomNavItem(
-                      icon: Icons.add_location_alt_outlined,
-                      label: 'أضف مساحتك',
-                      scale: scale,
-                      onTap: () {
-                        Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddWorkspaceScreen(),
-                            ),
-                          );
-                      },
-                    ),
-                    Transform.translate(
-                      offset: const Offset(
-                        0,
-                        -20,
-                      ), // كلما زاد الرقم طلعت لفوق أكثر
-                      child: _BottomNavItem(
-                        icon: Icons.star_border,
-                        label: '',
-                        scale: scale,
-                        isCenter: true,
-                        onTap: () {
-                          
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _BottomNavItem extends StatelessWidget {
-  const _BottomNavItem({
-    required this.icon,
-    required this.label,
-    required this.scale,
-    required this.onTap,
-    this.isCenter = false,
-  });
-  final IconData icon;
-  final String label;
-  final double scale;
-  final VoidCallback onTap;
-  final bool isCenter;
-
-  double s(double v) => v * scale;
-
-  @override
-  Widget build(BuildContext context) {
-    if (isCenter) {
-      return GestureDetector(
-        onTap: onTap,
-        child: Container(
-          width: s(100),
-          height: s(100),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            shape: BoxShape.circle,
-            border: Border.all(color: const Color(0xFF3B6D11), width: s(7)),
-          ),
-          child: Icon(icon, size: s(47), color: Colors.black),
-        ),
-      );
-    }
-
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            icon,
-            size: s(32), // حجم الأيقونة
-            color: Colors.white, // لون الأيقونة
-          ),
-          SizedBox(height: s(4)),
-          if (label.isNotEmpty)
-            Text(
-              label,
-              style: TextStyle(
-                fontFamily: 'Tajawal',
-                fontSize: s(18), // كبر الخط
-                fontWeight: FontWeight.w700,
-                color: Colors.white, // لون النص
-              ),
-            ),
-        ],
       ),
     );
   }
