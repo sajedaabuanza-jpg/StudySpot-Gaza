@@ -1,3 +1,4 @@
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -31,6 +32,10 @@ const List<String> _westaDistricts = [
 const List<String> _khanDistricts = [
   'البلد', 'مدينة حمد والقرارة', 'المواصي',
 ];
+
+// ══════════════════════════════════════════════════════════════════════════════
+//  قيم filters_csv المطابقة لـ filter_page.dart و workspace_details_page.dart
+// ══════════════════════════════════════════════════════════════════════════════
 
 // ══════════════════════════════════════════════════════════════════════════════
 //  REUSABLE: Section Header
@@ -661,6 +666,7 @@ class _AddWorkspaceScreenState extends State<AddWorkspaceScreen> {
             ),
           ),
           centerTitle: true,
+          // تم حذف زر أيقونة البيت (actions) والتفاعل الخاص به من هنا بالكامل بناءً على طلبك
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
