@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:studyspot/add_workspace_screen.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // استيراد الفايرستور
 import 'package:studyspot/card/WorkspaceCard.dart';
-import 'package:studyspot/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
+import 'package:studyspot/details/workspace_details_page.dart';
+import 'package:studyspot/favorite/favorite.dart'; // استيراد صفحة التفاصيل
 
 class al_nusser extends StatefulWidget {
   const al_nusser({super.key});
@@ -43,6 +44,17 @@ class _al_nusserState extends State<al_nusser> {
         title: const Text("النصر", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const favorite()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       // استخدام StreamBuilder لجلب البيانات بشكل حي ومباشر من الفايرستور

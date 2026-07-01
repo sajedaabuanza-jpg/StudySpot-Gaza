@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:studyspot/favorite/favorite.dart';
 import '../card/WorkspaceCard.dart';
 import 'package:studyspot/add_workspace_screen.dart';
 import '../details/workspace_details_page.dart'; // تأكد من صحة مسار صفحة التفاصيل عندك
@@ -43,6 +44,17 @@ class _al_mawasiState extends State<al_mawasi> {
         title: const Text("المواصي", style: TextStyle(color: Colors.white)),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const favorite()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
       floatingActionButton: FloatingActionButton.extended(

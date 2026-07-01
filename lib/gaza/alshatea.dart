@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:studyspot/add_workspace_screen.dart'; // استيراد صفحة إضافة مساحة العمل
 import 'package:cloud_firestore/cloud_firestore.dart'; // استيراد الفايرستور
 import 'package:studyspot/card/WorkspaceCard.dart';
-import 'package:studyspot/details/workspace_details_page.dart'; // استيراد صفحة التفاصيل
+import 'package:studyspot/details/workspace_details_page.dart';
+import 'package:studyspot/favorite/favorite.dart'; // استيراد صفحة التفاصيل
 
 class alshatea extends StatefulWidget {
   const alshatea({super.key});
@@ -43,6 +44,17 @@ class _alshateaState extends State<alshatea> {
         title: const Text("الشاطئ", style: TextStyle(color: Colors.white, fontFamily: 'Cairo')),
         centerTitle: true,
         iconTheme: const IconThemeData(color: Colors.white),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.favorite_border, color: Colors.white),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const favorite()),
+              );
+            },
+          ),
+        ],
       ),
       backgroundColor: Colors.white,
 
