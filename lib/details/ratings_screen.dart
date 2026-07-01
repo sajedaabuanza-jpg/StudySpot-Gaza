@@ -19,9 +19,6 @@ import 'package:flutter/material.dart'
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COLORS
-// ─────────────────────────────────────────────────────────────────────────────
 const _darkGreen = Color(0xFF2D5A00);
 const _lightGreenBg = Color(0xFFEFF6E0);
 const _cardWhite = Color(0xFFFAFAF5);
@@ -29,10 +26,6 @@ const _starGold = Color(0xFFFFC107);
 const _starEmpty = Color(0xFFD4D4D4);
 const _textDark = Color(0xFF1A1A1A);
 const _ratingGreen = Color(0xFF3A7D00);
-
-// ─────────────────────────────────────────────────────────────────────────────
-// MODELS
-// ─────────────────────────────────────────────────────────────────────────────
 
 class CafeRatingInfo {
   final double avgRating;
@@ -66,14 +59,9 @@ class ReviewModel {
   });
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// DATA SERVICE — Firebase + Updated to Workspaces
-// ─────────────────────────────────────────────────────────────────────────────
-
 class RatingsService {
   static final _db = FirebaseFirestore.instance;
 
-  // تم التعديل هنا ليقرأ من كولكشن workspaces
   static Future<CafeRatingInfo> fetchCafeRating(String cafeId) async {
     try {
       final doc = await _db.collection('workspaces').doc(cafeId).get();
@@ -87,7 +75,7 @@ class RatingsService {
       final data = doc.data()!;
       return CafeRatingInfo(
         avgRating: (data['avgRating'] as num?)?.toDouble() ?? 0.0,
-        totalReviews: data['totalReviews'] as int? ?? 0,
+        totalReviews: (data['totalReviews'] as num?)?.toInt() ?? 0,
         barFractions: data['barFractions'] != null
             ? List<double>.from(data['barFractions'])
             : [0, 0, 0, 0, 0],
@@ -101,7 +89,6 @@ class RatingsService {
     }
   }
 
-  // تم التعديل هنا ليقرأ من كولكشن workspaces
   static Future<List<ReviewModel>> fetchReviews(String cafeId) async {
     try {
       final snap = await _db
@@ -131,7 +118,7 @@ class RatingsService {
           userName: name,
           avatarLabel: name.isNotEmpty ? name[0] : '؟',
           avatarColor: avatarColors[i % avatarColors.length],
-          rating: data['rating'] as int? ?? 0,
+          rating: (data['rating'] as num?)?.toInt() ?? 0,
           date: data['createdAt'] != null
               ? _formatDate((data['createdAt'] as Timestamp).toDate())
               : '',
@@ -143,7 +130,6 @@ class RatingsService {
     }
   }
 
-  // تم التعديل هنا ليرفع التقييمات داخل كولكشن workspaces
   static Future<void> submitReview({
     required String cafeId,
     required String userId,
@@ -152,49 +138,36 @@ class RatingsService {
     required String comment,
   }) async {
     final cafeRef = _db.collection('workspaces').doc(cafeId);
-    await _db.runTransaction((transaction) async {
-      final cafeSnap = await transaction.get(cafeRef);
+    final cafeSnap = await cafeRef.get();
+    final data = cafeSnap.data() as Map<String, dynamic>? ?? {};
 
-      if (!cafeSnap.exists) {
-        final fractions = [0.0, 0.0, 0.0, 0.0, 0.0];
-        fractions[rating - 1] = 1.0;
-        transaction.set(cafeRef, {
-          'avgRating': rating.toDouble(),
-          'totalReviews': 1,
-          'barFractions': fractions,
-        });
-      } else {
-        final currentTotal = cafeSnap['totalReviews'] as int? ?? 0;
-        final currentAvg =
-            (cafeSnap['avgRating'] as num?)?.toDouble() ?? 0.0;
-        final newTotal = currentTotal + 1;
-        final newAvg = ((currentAvg * currentTotal) + rating) / newTotal;
+    final currentTotal = (data['totalReviews'] as num?)?.toInt() ?? 0;
+    final currentAvg = (data['avgRating'] as num?)?.toDouble() ?? 0.0;
+    final newTotal = currentTotal + 1;
+    final newAvg = ((currentAvg * currentTotal) + rating) / newTotal;
 
-        final currentFractions = List<double>.from(
-          (cafeSnap.data() as Map<String, dynamic>?)?['barFractions'] ??
-              [0.0, 0.0, 0.0, 0.0, 0.0],
-        );
-        final currentCounts =
-        currentFractions.map((f) => (f * currentTotal).round()).toList();
-        currentCounts[rating - 1] += 1;
-        final newFractions = currentCounts
-            .map((c) => newTotal > 0 ? c / newTotal : 0.0)
-            .toList();
+    final currentFractions = List<double>.from(
+      data['barFractions'] ?? [0.0, 0.0, 0.0, 0.0, 0.0],
+    );
+    final currentCounts =
+    currentFractions.map((f) => (f * currentTotal).round()).toList();
+    currentCounts[rating - 1] += 1;
+    final newFractions = currentCounts
+        .map((c) => newTotal > 0 ? c / newTotal : 0.0)
+        .toList();
 
-        transaction.update(cafeRef, {
-          'avgRating': newAvg,
-          'totalReviews': newTotal,
-          'barFractions': newFractions,
-        });
-      }
+    await cafeRef.set({
+      'avgRating': newAvg,
+      'totalReviews': newTotal,
+      'barFractions': newFractions,
+    }, SetOptions(merge: true));
 
-      transaction.set(cafeRef.collection('reviews').doc(), {
-        'userId': userId,
-        'userName': userName,
-        'rating': rating,
-        'comment': comment,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
+    await cafeRef.collection('reviews').doc().set({
+      'userId': userId,
+      'userName': userName,
+      'rating': rating,
+      'comment': comment,
+      'createdAt': FieldValue.serverTimestamp(),
     });
   }
 
@@ -206,10 +179,6 @@ class RatingsService {
     return '${months[date.month - 1]} ${date.day} ${date.year}';
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RATINGS SCREEN
-// ─────────────────────────────────────────────────────────────────────────────
 
 class RatingsScreen extends StatefulWidget {
   final String cafeId;
@@ -300,10 +269,6 @@ class _RatingsScreenState extends State<RatingsScreen> {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// APP BAR
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _AppBar extends StatelessWidget {
   final String cafeName;
   const _AppBar({required this.cafeName});
@@ -360,10 +325,6 @@ class _AppBar extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// BODY
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _Body extends StatelessWidget {
   final CafeRatingInfo ratingInfo;
@@ -436,10 +397,6 @@ class _Body extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// RATING SUMMARY CARD
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _RatingSummaryCard extends StatelessWidget {
   final CafeRatingInfo info;
@@ -540,10 +497,6 @@ class _RatingBars extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ADD RATING BUTTON
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _AddRatingButton extends StatefulWidget {
   final VoidCallback onTap;
   const _AddRatingButton({required this.onTap});
@@ -595,10 +548,6 @@ class _AddRatingButtonState extends State<_AddRatingButton> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// REVIEW CARD
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _ReviewCard extends StatelessWidget {
   final ReviewModel review;
@@ -682,10 +631,6 @@ class _ReviewCard extends StatelessWidget {
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STAR ROW
-// ─────────────────────────────────────────────────────────────────────────────
-
 class _StarRow extends StatelessWidget {
   final double rating;
   final double size;
@@ -710,10 +655,6 @@ class _StarRow extends StatelessWidget {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// ADD REVIEW SHEET
-// ─────────────────────────────────────────────────────────────────────────────
 
 class AddReviewSheet extends StatefulWidget {
   final String cafeId;
@@ -887,10 +828,6 @@ class _AddReviewSheetState extends State<AddReviewSheet> {
     );
   }
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
-// WAVE BACKGROUND
-// ─────────────────────────────────────────────────────────────────────────────
 
 class _WaveBackground extends StatelessWidget {
   const _WaveBackground();
