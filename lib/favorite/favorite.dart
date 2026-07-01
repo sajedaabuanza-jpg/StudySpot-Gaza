@@ -1,42 +1,63 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:studyspot/homePage.dart';
-import 'package:studyspot/add_workspace_screen.dart';
+import 'package:studyspot/city.dart';
+import 'package:studyspot/details/add_workspace_screen.dart';
+// import 'package:studyspot/details/add_workspace_screen.dart';
+import 'package:studyspot/details/workspace_details_page.dart';
+import 'package:studyspot/favorite/favorites_service.dart';
+// اناااااا
 
 class favorite extends StatelessWidget {
   const favorite({super.key});
 
   static const _designWidth = 390.0;
+  static final FavoritesService _favoritesService = FavoritesService();
+
+  double _parseRating(String? qualityScores) {
+    if (qualityScores == null || qualityScores.isEmpty) return 5.0;
+    try {
+      final pairs = qualityScores.split('|');
+      double total = 0;
+      int count = 0;
+      for (var pair in pairs) {
+        final parts = pair.split(':');
+        if (parts.length == 2) {
+          final score = double.tryParse(parts[1]);
+          if (score != null) {
+            total += score;
+            count++;
+          }
+        }
+      }
+      return count > 0 ? (total / count) : 5.0;
+    } catch (e) {
+      return 5.0;
+    }
+  }
+
+  List<_FavoriteSpace> _favoriteSpacesFromWorkspaces(
+    List<Map<String, dynamic>> workspaces,
+  ) {
+    return workspaces.map((workspace) {
+      final data = Map<String, dynamic>.from(workspace);
+      final workspaceId = (data['workspaceId'] ?? data['id']).toString();
+      return _FavoriteSpace(
+        workspaceId: workspaceId,
+        name: data['name'] ?? 'بدون اسم',
+        address: "${data['city'] ?? ''} - ${data['district'] ?? ''}",
+        rating: _parseRating(data['quality_scores']),
+        imageUrl: data['image_url'] ?? '',
+        workspace: data,
+      );
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final scale = (size.width / _designWidth) * 0.5;
     double s(double v) => v * scale;
-
-    // Replace with your real data source (Provider/Bloc/DB/etc.).
-    // Set it to `[]` to see the Empty State design.
-    final favoriteSpaces = <_FavoriteSpace>[
-      const _FavoriteSpace(
-        name: 'كافيه الزعيم',
-        address: 'المواصي - حي العطار',
-        rating: 4,
-        imageAsset: 'assets/images/hub.jpeg',
-      ),
-      const _FavoriteSpace(
-        name: 'مكتبة الأمل',
-        address: 'شارع الوحدة - وسط المدينة',
-        rating: 5,
-        imageAsset: 'assets/images/hub.jpeg',
-      ),
-      const _FavoriteSpace(
-        name: 'مركز الشباب',
-        address: 'شارع النصر - حي الشجاعية',
-        rating: 3,
-        imageAsset: 'assets/images/hub.jpeg',
-      ),
-    ];
-
     final navHeight = s(100);
 
     return Directionality(
@@ -54,66 +75,84 @@ class favorite extends StatelessWidget {
             SafeArea(
               child: Padding(
                 padding: EdgeInsets.only(bottom: navHeight),
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(child: SizedBox(height: s(8))),
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: s(24)),
-                      sliver: SliverToBoxAdapter(child: _Header(scale: scale)),
-                    ),
-                    SliverToBoxAdapter(child: SizedBox(height: s(40))),
-                    SliverPadding(
-                      padding: EdgeInsets.symmetric(horizontal: s(24)),
-                      sliver: SliverToBoxAdapter(
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: _TitleAndCount(
-                            count: favoriteSpaces.length,
-                            scale: scale,
-                          ),
-                        ),
+                child: StreamBuilder<User?>(
+                  stream: _favoritesService.authStateChanges,
+                  builder: (context, authSnapshot) {
+                    final user = authSnapshot.data;
+                    if (authSnapshot.connectionState ==
+                        ConnectionState.waiting) {
+                      return _FavoritesLayout(
+                        scale: scale,
+                        loading: true,
+                        favoriteSpaces: const [],
+                      );
+                    }
+
+                    if (authSnapshot.hasError) {
+                      return _FavoritesLayout(
+                        scale: scale,
+                        errorMessage: "حدث خطأ أثناء تحميل المفضلة",
+                        favoriteSpaces: const [],
+                      );
+                    }
+
+                    if (user == null) {
+                      return _FavoritesLayout(
+                        scale: scale,
+                        favoriteSpaces: const [],
+                      );
+                    }
+
+                    return StreamBuilder<List<String>>(
+                      stream: _favoritesService.getFavoriteWorkspaceIdsForUser(
+                        user.uid,
                       ),
-                    ),
-                    SliverToBoxAdapter(child: SizedBox(height: s(28))),
-                    if (favoriteSpaces.isEmpty)
-                      SliverFillRemaining(
-                        hasScrollBody: true,
-                        child: LayoutBuilder(
-                          builder: (context, constraints) {
-                            return SingleChildScrollView(
-                              physics: const ClampingScrollPhysics(),
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                    minHeight: constraints.maxHeight),
-                                child: Center(
-                                  child: _EmptyState(scale: scale),
-                                ),
-                              ),
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return _FavoritesLayout(
+                            scale: scale,
+                            loading: true,
+                            favoriteSpaces: const [],
+                          );
+                        }
+
+                        if (snapshot.hasError) {
+                          return _FavoritesLayout(
+                            scale: scale,
+                            errorMessage: "حدث خطأ أثناء تحميل المفضلة",
+                            favoriteSpaces: const [],
+                          );
+                        }
+
+                        final workspaceIds = snapshot.data ?? const <String>[];
+                        return FutureBuilder<List<Map<String, dynamic>>>(
+                          future: _favoritesService.getWorkspacesByIds(
+                            workspaceIds,
+                          ),
+                          builder: (context, workspaceSnapshot) {
+                            final favoriteSpaces = workspaceSnapshot.hasData
+                                ? _favoriteSpacesFromWorkspaces(
+                                    workspaceSnapshot.data!,
+                                  )
+                                : <_FavoriteSpace>[];
+
+                            return _FavoritesLayout(
+                              scale: scale,
+                              loading:
+                                  workspaceSnapshot.connectionState ==
+                                      ConnectionState.waiting &&
+                                  workspaceIds.isNotEmpty,
+                              errorMessage: workspaceSnapshot.hasError
+                                  ? "حدث خطأ أثناء تحميل تفاصيل المفضلة"
+                                  : null,
+                              favoriteSpaces: favoriteSpaces,
                             );
                           },
-                        ),
-                      )
-                    else
-                      SliverPadding(
-                        padding: EdgeInsets.symmetric(horizontal: s(24)),
-                        sliver: SliverList(
-                          delegate: SliverChildBuilderDelegate(
-                            (context, index) {
-                              final isLast = index == favoriteSpaces.length - 1;
-                              return Padding(
-                                padding:
-                                    EdgeInsets.only(bottom: isLast ? 0 : s(18)),
-                                child: _FavoriteCard(
-                                  scale: scale,
-                                  space: favoriteSpaces[index],
-                                ),
-                              );
-                            },
-                            childCount: favoriteSpaces.length,
-                          ),
-                        ),
-                      ),
-                  ],
+                        );
+                      },
+                    );
+                  },
                 ),
               ),
             ),
@@ -130,16 +169,105 @@ class favorite extends StatelessWidget {
 
 class _FavoriteSpace {
   const _FavoriteSpace({
+    required this.workspaceId,
     required this.name,
     required this.address,
     required this.rating,
-    required this.imageAsset,
+    required this.imageUrl,
+    required this.workspace,
   });
 
+  final String workspaceId;
   final String name;
   final String address;
-  final int rating;
-  final String imageAsset;
+  final double rating;
+  final String imageUrl;
+  final Map<String, dynamic> workspace;
+}
+
+class _FavoritesLayout extends StatelessWidget {
+  const _FavoritesLayout({
+    required this.scale,
+    required this.favoriteSpaces,
+    this.loading = false,
+    this.errorMessage,
+  });
+
+  final double scale;
+  final List<_FavoriteSpace> favoriteSpaces;
+  final bool loading;
+  final String? errorMessage;
+
+  double s(double v) => v * scale;
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(child: SizedBox(height: s(8))),
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: s(24)),
+          sliver: SliverToBoxAdapter(child: _Header(scale: scale)),
+        ),
+        SliverToBoxAdapter(child: SizedBox(height: s(40))),
+        SliverPadding(
+          padding: EdgeInsets.symmetric(horizontal: s(24)),
+          sliver: SliverToBoxAdapter(
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: _TitleAndCount(count: favoriteSpaces.length, scale: scale),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(child: SizedBox(height: s(28))),
+        if (loading)
+          const SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(
+              child: CircularProgressIndicator(color: Color(0xFF3B6D11)),
+            ),
+          )
+        else if (errorMessage != null)
+          SliverFillRemaining(
+            hasScrollBody: false,
+            child: Center(child: Text(errorMessage!)),
+          )
+        else if (favoriteSpaces.isEmpty)
+          SliverFillRemaining(
+            hasScrollBody: true,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                return SingleChildScrollView(
+                  physics: const ClampingScrollPhysics(),
+                  child: ConstrainedBox(
+                    constraints: BoxConstraints(
+                      minHeight: constraints.maxHeight,
+                    ),
+                    child: Center(child: _EmptyState(scale: scale)),
+                  ),
+                );
+              },
+            ),
+          )
+        else
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: s(24)),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final isLast = index == favoriteSpaces.length - 1;
+                return Padding(
+                  padding: EdgeInsets.only(bottom: isLast ? 0 : s(18)),
+                  child: _FavoriteCard(
+                    scale: scale,
+                    space: favoriteSpaces[index],
+                  ),
+                );
+              }, childCount: favoriteSpaces.length),
+            ),
+          ),
+      ],
+    );
+  }
 }
 
 class _Header extends StatelessWidget {
@@ -160,11 +288,7 @@ class _Header extends StatelessWidget {
             child: IconButton(
               onPressed: () {},
               padding: EdgeInsets.zero,
-              icon: Icon(
-                Icons.menu,
-                size: s(34),
-                color: Colors.black,
-              ),
+              icon: Icon(Icons.menu, size: s(34), color: Colors.black),
             ),
           ),
           Align(
@@ -220,11 +344,7 @@ class _BrandMark extends StatelessWidget {
       height: s(28),
       child: Stack(
         children: [
-          Positioned(
-            left: 0,
-            bottom: 0,
-            child: _BrandSquare(scale: scale),
-          ),
+          Positioned(left: 0, bottom: 0, child: _BrandSquare(scale: scale)),
           Positioned(
             left: s(24),
             bottom: 0,
@@ -338,74 +458,133 @@ class _FavoriteCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: s(175),
-      padding: EdgeInsets.symmetric(horizontal: s(22), vertical: s(18)),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(s(30)),
-      ),
-      child: Row(
-        textDirection: TextDirection.rtl,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(s(22)),
-            child: Image.asset(
-              space.imageAsset,
-              width: s(110),
-              height: double.infinity,
-              fit: BoxFit.cover,
-            ),
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) =>
+                workspace_details_page(workspace: space.workspace),
           ),
-          SizedBox(width: s(18)),
-          Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Text(
-                  space.name,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Tajawal',
-                    fontSize: s(28),
-                    fontWeight: FontWeight.w700,
-                    color: const Color(0xFF3B6D11),
-                  ),
-                ),
-                SizedBox(height: s(8)),
-                Text(
-                  space.address,
-                  textAlign: TextAlign.center,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    fontFamily: 'Tajawal',
-                    fontSize: s(20),
-                    fontWeight: FontWeight.w400,
-                    color: const Color(0xFF3B6D11),
-                  ),
-                ),
-                SizedBox(height: s(12)),
-                Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: List.generate(
-                    5,
-                    (i) => Icon(
-                      i < space.rating ? Icons.star : Icons.star_border,
-                      size: s(28),
-                      color: const Color(0xFFFF9719),
+        );
+      },
+      onLongPress: () => _confirmDelete(context),
+      child: Container(
+        height: s(175),
+        padding: EdgeInsets.symmetric(horizontal: s(22), vertical: s(18)),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(s(30)),
+        ),
+        child: Row(
+          textDirection: TextDirection.rtl,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(s(22)),
+              child: _buildImage(),
+            ),
+            SizedBox(width: s(18)),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  Text(
+                    space.name,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      fontSize: s(28),
+                      fontWeight: FontWeight.w700,
+                      color: const Color(0xFF3B6D11),
                     ),
                   ),
-                ),
-              ],
+                  SizedBox(height: s(8)),
+                  Text(
+                    space.address,
+                    textAlign: TextAlign.center,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Tajawal',
+                      fontSize: s(20),
+                      fontWeight: FontWeight.w400,
+                      color: const Color(0xFF3B6D11),
+                    ),
+                  ),
+                  SizedBox(height: s(12)),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: List.generate(
+                      5,
+                      (i) => Icon(
+                        i < space.rating.round()
+                            ? Icons.star
+                            : Icons.star_border,
+                        size: s(28),
+                        color: const Color(0xFFFF9719),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildImage() {
+    if (space.imageUrl.startsWith('http')) {
+      return Image.network(
+        space.imageUrl,
+        width: s(110),
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) => _imagePlaceholder(),
+      );
+    }
+    return _imagePlaceholder();
+  }
+
+  Widget _imagePlaceholder() {
+    return Container(
+      width: s(110),
+      height: double.infinity,
+      color: const Color(0xFFD4ECCE),
+      child: Icon(
+        Icons.image_not_supported,
+        color: const Color(0xFF3B6D11),
+        size: s(36),
+      ),
+    );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final shouldDelete = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("حذف من المفضلة"),
+        content: Text("هل تريد حذف ${space.name} من المفضلة؟"),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("إلغاء"),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text("حذف"),
           ),
         ],
       ),
     );
+
+    if (shouldDelete != true) return;
+
+    await favorite._favoritesService.removeFavorite(space.workspaceId);
   }
 }
 
@@ -502,9 +681,7 @@ class _BottomNav extends StatelessWidget {
                       onTap: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(
-                            builder: (context) => const homePage(),
-                          ),
+                          MaterialPageRoute(builder: (context) => const city()),
                         );
                       },
                     ),
@@ -512,22 +689,27 @@ class _BottomNav extends StatelessWidget {
                       icon: Icons.add_location_alt_outlined,
                       label: 'أضف مساحتك',
                       scale: scale,
-                      onTap: () {},
+                      onTap: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const AddWorkspaceScreen(),
+                            ),
+                          );
+                      },
                     ),
                     Transform.translate(
-                      offset: const Offset(0, -20), // كلما زاد الرقم طلعت لفوق أكثر
+                      offset: const Offset(
+                        0,
+                        -20,
+                      ), // كلما زاد الرقم طلعت لفوق أكثر
                       child: _BottomNavItem(
                         icon: Icons.star_border,
                         label: '',
                         scale: scale,
                         isCenter: true,
                         onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const AddWorkspaceScreen(),
-                            ),
-                          );
+                          
                         },
                       ),
                     ),
@@ -569,16 +751,9 @@ class _BottomNavItem extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             shape: BoxShape.circle,
-            border: Border.all(
-              color: const Color(0xFF3B6D11),
-              width: s(7),
-            ),
+            border: Border.all(color: const Color(0xFF3B6D11), width: s(7)),
           ),
-          child: Icon(
-            icon,
-            size: s(47),
-            color: Colors.black,
-          ),
+          child: Icon(icon, size: s(47), color: Colors.black),
         ),
       );
     }

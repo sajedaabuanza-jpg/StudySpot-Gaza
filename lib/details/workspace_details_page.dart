@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:studyspot/favorite/favorites_service.dart';
 import 'package:url_launcher/url_launcher.dart';
 // استيراد صفحة التقييمات
 import 'ratings_screen.dart';
@@ -16,9 +18,14 @@ class workspace_details_page extends StatefulWidget {
 }
 
 class _workspace_details_pageState extends State<workspace_details_page> {
+  static final FavoritesService _favoritesService = FavoritesService();
+
   double _liveRating = 0.0;
   int _liveTotalReviews = 0;
   bool _loadingRating = true;
+
+  String get _workspaceId =>
+      (widget.workspace['workspaceId'] ?? widget.workspace['id'] ?? '').toString();
 
   @override
   void initState() {
@@ -193,10 +200,13 @@ class _workspace_details_pageState extends State<workspace_details_page> {
                     onPressed: () => Navigator.pop(context),
                   ),
                 ),
-                const Positioned(
+                Positioned(
                   top: 40,
                   right: 20,
-                  child: Icon(Icons.favorite_border, color: Colors.white, size: 30),
+                  child: _DetailsFavoriteButton(
+                    workspaceId: _workspaceId,
+                    favoritesService: _favoritesService,
+                  ),
                 ),
                 Positioned(
                   top: 45,
@@ -633,6 +643,90 @@ class _workspace_details_pageState extends State<workspace_details_page> {
           ),
           Text(label, style: const TextStyle(fontSize: 14, color: Colors.grey, fontWeight: FontWeight.w500, fontFamily: 'Cairo')),
         ],
+      ),
+    );
+  }
+}
+
+class _DetailsFavoriteButton extends StatelessWidget {
+  const _DetailsFavoriteButton({
+    required this.workspaceId,
+    required this.favoritesService,
+  });
+
+  final String workspaceId;
+  final FavoritesService favoritesService;
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<User?>(
+      stream: favoritesService.authStateChanges,
+      builder: (context, authSnapshot) {
+        final user = authSnapshot.data;
+        if (user == null) {
+          return _HeaderFavoriteIcon(
+            isFavorite: false,
+            onPressed: () =>
+                _showMessage(context, 'سجّلي الدخول أولاً لحفظ المفضلة'),
+          );
+        }
+
+        return StreamBuilder<bool>(
+          stream: favoritesService.isFavoriteForUser(user.uid, workspaceId),
+          builder: (context, favoriteSnapshot) {
+            final isFavorite = favoriteSnapshot.data ?? false;
+            return _HeaderFavoriteIcon(
+              isFavorite: isFavorite,
+              onPressed: () async {
+                if (workspaceId.isEmpty) {
+                  _showMessage(
+                    context,
+                    'تعذر حفظ المكان لأن معرف المساحة غير موجود',
+                  );
+                  return;
+                }
+
+                try {
+                  await favoritesService.toggleFavorite(
+                    workspaceId,
+                    isFavorite,
+                  );
+                } catch (_) {
+                  if (!context.mounted) return;
+                  _showMessage(context, 'تعذر تحديث المفضلة، حاول مرة أخرى');
+                }
+              },
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _showMessage(BuildContext context, String message) {
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message)));
+  }
+}
+
+class _HeaderFavoriteIcon extends StatelessWidget {
+  const _HeaderFavoriteIcon({
+    required this.isFavorite,
+    required this.onPressed,
+  });
+
+  final bool isFavorite;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      icon: Icon(
+        isFavorite ? Icons.favorite : Icons.favorite_border,
+        color: isFavorite ? Colors.redAccent : Colors.white,
+        size: 30,
       ),
     );
   }

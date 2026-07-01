@@ -67,15 +67,16 @@ class ReviewModel {
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// DATA SERVICE — Firebase + safe empty handling
+// DATA SERVICE — Firebase + Updated to Workspaces
 // ─────────────────────────────────────────────────────────────────────────────
 
 class RatingsService {
   static final _db = FirebaseFirestore.instance;
 
+  // تم التعديل هنا ليقرأ من كولكشن workspaces
   static Future<CafeRatingInfo> fetchCafeRating(String cafeId) async {
     try {
-      final doc = await _db.collection('cafes').doc(cafeId).get();
+      final doc = await _db.collection('workspaces').doc(cafeId).get();
       if (!doc.exists || doc.data() == null) {
         return const CafeRatingInfo(
           avgRating: 0.0,
@@ -100,10 +101,11 @@ class RatingsService {
     }
   }
 
+  // تم التعديل هنا ليقرأ من كولكشن workspaces
   static Future<List<ReviewModel>> fetchReviews(String cafeId) async {
     try {
       final snap = await _db
-          .collection('cafes')
+          .collection('workspaces')
           .doc(cafeId)
           .collection('reviews')
           .orderBy('createdAt', descending: true)
@@ -141,6 +143,7 @@ class RatingsService {
     }
   }
 
+  // تم التعديل هنا ليرفع التقييمات داخل كولكشن workspaces
   static Future<void> submitReview({
     required String cafeId,
     required String userId,
@@ -148,7 +151,7 @@ class RatingsService {
     required int rating,
     required String comment,
   }) async {
-    final cafeRef = _db.collection('cafes').doc(cafeId);
+    final cafeRef = _db.collection('workspaces').doc(cafeId);
     await _db.runTransaction((transaction) async {
       final cafeSnap = await transaction.get(cafeRef);
 

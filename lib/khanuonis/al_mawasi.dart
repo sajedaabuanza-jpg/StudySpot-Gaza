@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../card/WorkspaceCard.dart';
+import 'package:studyspot/add_workspace_screen.dart';
 import '../details/workspace_details_page.dart'; // تأكد من صحة مسار صفحة التفاصيل عندك
 
 class al_mawasi extends StatefulWidget {
@@ -44,6 +45,26 @@ class _al_mawasiState extends State<al_mawasi> {
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       backgroundColor: Colors.white,
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const AddWorkspaceScreen(),
+            ),
+          );
+        },
+        backgroundColor: const Color(0xFF386A1B),
+        icon: const Icon(Icons.add_location_alt_outlined, color: Colors.white),
+        label: const Text(
+          'أضف مساحتك',
+          style: TextStyle(
+            color: Colors.white,
+            fontFamily: 'Cairo',
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
       body: StreamBuilder<QuerySnapshot>(
         // جلب المجموعة كاملة بدون فلترة معقدة من السيرفر لتفادي مشاكل الفراغات وحروف الـ الـ (ي / ى)
         stream: FirebaseFirestore.instance.collection('workspaces').snapshots(),
@@ -92,6 +113,7 @@ class _al_mawasiState extends State<al_mawasi> {
               };              double calculatedRating = _parseRating(item['quality_scores']);
 
               return WorkspaceCard(
+                workspaceId: item['id'].toString(),
                 title: item['name'] ?? 'بدون اسم',
                 location: "${item['city'] ?? ''} - ${item['district'] ?? ''}",
                 imagePath: item['image_url'] ?? '',

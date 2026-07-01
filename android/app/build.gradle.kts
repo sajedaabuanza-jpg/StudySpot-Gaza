@@ -1,5 +1,8 @@
 plugins {
     id("com.android.application")
+    // START: FlutterFire Configuration
+    id("com.google.gms.google-services")
+    // END: FlutterFire Configuration
     id("kotlin-android")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
@@ -8,7 +11,19 @@ plugins {
 android {
     namespace = "com.example.studyspot"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = flutter.ndkVersion
+    android {
+        namespace = "com.example.studyspot"
+        compileSdk = flutter.compileSdkVersion
+
+        // 👇 قم بتغيير هذا السطر وكتابة رقم الإصدار السليم يدوياً بين علامتي تنصيص
+        ndkVersion = "28.2.13676358"
+
+        compileOptions {
+            sourceCompatibility = JavaVersion.VERSION_17
+            targetCompatibility = JavaVersion.VERSION_17
+        }
+        // ... باقي الكود دون تغيير
+    }
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
